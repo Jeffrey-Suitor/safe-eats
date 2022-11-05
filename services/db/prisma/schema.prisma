@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+enum Appliance {
+  Toaster_Oven
+}
+
+enum TemperatureUnit {
+  C
+  F
+}
+
+enum ApplianceMode {
+  Bake
+  Broil
+  Convection
+  Rotisserie
+}
+
+model Recipe {
+  id              String          @id @default(uuid())
+  name            String
+  description     String
+  cookingTime     Int
+  expiryDate      Int
+  appliance       Appliance
+  temperature     Int
+  temperatureUnit TemperatureUnit
+  applianceMode   ApplianceMode
+  qrCodes        QRCode[]
+}
+
+model QRCode {
+  id              String          @id @default(uuid())
+  recipe          Recipe          @relation(fields: [recipeId],references: [id])
+  recipeId        String
+}
