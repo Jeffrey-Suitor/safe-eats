@@ -12,27 +12,27 @@ import { trpc } from "../utils/trpc";
 import DropDown from "react-native-paper-dropdown";
 import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
-import { applianceTypes, temperatureUnits, applianceModes, RecipeSchema, defaultRecipe } from "@safe-eats/types/recipeTypes";
+import { applianceTypes, temperatureUnits, applianceModes, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { cookingTimeUnits, expiryDateUnits,unitsToSeconds } from "../utils/timeConverter";
+import { capitalize } from "../utils/stringHelpers";
 
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);
 
-type Props = NativeStackScreenProps<RootStackParamList, "AddRecipe">;
+type Props = NativeStackScreenProps<RootStackParamList, "ModifyRecipe">;
 const dropDownValues = ["cookingTime", "expiryDate", "appliance", "temperatureUnit", "applianceMode"] as const;
 
-export const AddRecipe = ({ navigation }: Props) => {
-  const utils = trpc.useContext();
-  const { mutate } = trpc.recipe.add.useMutation({
+export const ModifyRecipe = ({ navigation, route }: Props) => {
+  const { recipe, modifyType } = route.params;
+  const { mutate } = trpc.recipe[modifyType].useMutation({
     async onSuccess() {
       navigation.pop();
-      console.log("success");
     },
   });
 
   const [showDropDown, setShowDropDown] = useState<typeof dropDownValues[number] | null>(null);
   const [showErrors, setShowErrors] = useState(false);
-  const [newRecipe, setNewRecipe] = useState<Recipe>(defaultRecipe);
+  const [newRecipe, setNewRecipe] = useState<Recipe>(recipe);
 
   const [cookingTimeUnit, setCookingTimeUnit] =
     useState<typeof cookingTimeUnits[number]>("Min");
@@ -137,8 +137,8 @@ export const AddRecipe = ({ navigation }: Props) => {
             visible={showDropDown === "appliance"}
             showDropDown={() => setShowDropDown("appliance")}
             onDismiss={() => setShowDropDown(null)}
-            value={newRecipe.appliance}
-            setValue={(value) => setNewRecipe(prev => { return { ...prev, appliance: value } })}
+            value={newRecipe.applianceType}
+            setValue={(value) => setNewRecipe(prev => { return { ...prev, applianceType: value } })}
             list={applianceTypes.map(val => { return { label: val.replace("_", " "), value: val} })}
           />
           <HelperText type="error" visible={false}>
@@ -198,7 +198,7 @@ export const AddRecipe = ({ navigation }: Props) => {
           }
           mutate(newRecipe);
         }}>
-          Create Recipe
+          {`${capitalize(modifyType)} Recipe`}
         </Button>
       </View>
     </SafeAreaView >

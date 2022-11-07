@@ -7,6 +7,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Scan">;
 export const Scan = ({ route, navigation }: Props) => {
+  const { scanType } = route.params;
   const [hasPermission, setHasPermission] = useState(false);
   const [scanned, setScanned] = useState(false);
 
@@ -36,7 +37,7 @@ export const Scan = ({ route, navigation }: Props) => {
       <View className="h-full w-full p-4">
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          className="absolute w-full h-full"
+          className="absolute h-full w-full"
         />
         {scanned && (
           <Button

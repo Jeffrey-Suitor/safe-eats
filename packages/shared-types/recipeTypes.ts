@@ -1,13 +1,7 @@
 import { z } from "zod";
+import { applianceTypes, applianceModes } from "./applianceTypes";
 
 export const temperatureUnits = ["C", "F"] as const;
-export const applianceTypes = ["Toaster_Oven"] as const;
-export const applianceModes = [
-  "Bake",
-  "Broil",
-  "Convection",
-  "Rotisserie",
-] as const;
 
 export const RecipeSchema = z.object({
   id: z.string().uuid().optional(),
@@ -15,7 +9,7 @@ export const RecipeSchema = z.object({
   description: z.string(),
   cookingTime: z.number(),
   expiryDate: z.number(),
-  appliance: z.enum(applianceTypes),
+  applianceType: z.enum(applianceTypes),
   temperature: z.number(),
   temperatureUnit: z.enum(temperatureUnits),
   applianceMode: z.enum(applianceModes),
@@ -28,7 +22,7 @@ export const defaultRecipe: Recipe = {
   description: "",
   cookingTime: 0,
   expiryDate: 0,
-  appliance: "Toaster_Oven",
+  applianceType: "Toaster_Oven",
   temperature: 0,
   temperatureUnit: "C",
   applianceMode: "Bake",

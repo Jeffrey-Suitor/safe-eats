@@ -1,14 +1,15 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
+
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
-enum Appliance {
+enum ApplianceType {
   Toaster_Oven
 }
 
@@ -30,15 +31,56 @@ model Recipe {
   description     String
   cookingTime     Int
   expiryDate      Int
-  appliance       Appliance
+  applianceType   ApplianceType
   temperature     Int
   temperatureUnit TemperatureUnit
   applianceMode   ApplianceMode
-  qrCodes        QRCode[]
+  qrCodes         QRCode[]
+  appliance       Appliance[]
+  user            UserToRecipe[]
 }
 
 model QRCode {
-  id              String          @id @default(uuid())
-  recipe          Recipe          @relation(fields: [recipeId],references: [id])
-  recipeId        String
+  id       String @id @default(uuid())
+  recipe   Recipe @relation(references: [id], fields: [recipeId], onDelete: Cascade)
+  recipeId String
+}
+
+model Appliance {
+  id               String            @id
+  name             String
+  type             ApplianceType
+  updatedAt        DateTime          @updatedAt
+  temperatureC     Int
+  temperatureF     Int
+  cookingStartTime DateTime
+  recipe           Recipe?           @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  recipeId         String?
+  users            UserToAppliance[]
+}
+
+model User {
+  id         String            @id @default(uuid())
+  name       String
+  email      String
+  appliances UserToAppliance[]
+  recipes    UserToRecipe[]
+}
+
+model UserToAppliance {
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  appliance   Appliance @relation(fields: [applianceId], references: [id])
+  applianceId String
+
+  @@id([userId, applianceId])
+}
+
+model UserToRecipe {
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
+
+  @@id([userId, recipeId])
 }

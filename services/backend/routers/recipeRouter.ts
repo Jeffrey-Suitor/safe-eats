@@ -1,8 +1,7 @@
 import { initTRPC } from "@trpc/server";
-import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { authedProcedure, publicProcedure, router } from "../trpc";
+import { router } from "../trpc";
 import { RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { prisma } from "@safe-eats/db";
 
@@ -25,7 +24,6 @@ export const recipeRouter = router({
   }),
 
   delete: t.procedure.input(z.string().uuid()).mutation(async ({ input }) => {
-    await prisma.qRCode.deleteMany({ where: { recipeId: input } });
     return await prisma.recipe.delete({ where: { id: input } });
   }),
 

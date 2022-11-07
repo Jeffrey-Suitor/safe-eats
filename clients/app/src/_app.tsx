@@ -6,19 +6,20 @@ import { Portal, Text, Provider as PaperProvider } from "react-native-paper";
 import { Appliances } from "./pages/Appliances";
 import { Recipes } from "./pages/Recipes";
 import { Scan } from "./pages/Scan";
-import { AddRecipe } from "./pages/AddRecipe";
+import { ModifyRecipe } from "./pages/ModifyRecipe";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-//@ts-ignore
 import { ToastProvider } from "react-native-paper-toast";
+import { Recipe } from "@safe-eats/types/recipeTypes";
+import { capitalize } from "./utils/stringHelpers";
 
 export type RootStackParamList = {
   Home: undefined;
   Appliances: undefined;
   Scan: { scanType: string };
-  AddRecipe: undefined;
+  ModifyRecipe: { recipe: Recipe; modifyType: "add" | "update" };
   Recipes: undefined;
 };
 
@@ -64,7 +65,14 @@ const App = () => {
               <Stack.Navigator>
                 <Stack.Screen name="Home" component={Home} />
                 <Stack.Screen name="Scan" component={Scan} />
-                <Stack.Screen name="AddRecipe" component={AddRecipe} />
+                <Stack.Screen
+                  name="ModifyRecipe"
+                  component={ModifyRecipe}
+                  initialParams={{ recipe: undefined }}
+                  options={({ route }) => ({
+                    title: `${capitalize(route.params.modifyType)} Recipe`,
+                  })}
+                />
               </Stack.Navigator>
             </NavigationContainer>
           </ToastProvider>

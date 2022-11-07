@@ -25,7 +25,7 @@ export const qrCodeRouter = router({
   }),
 
   update: t.procedure.input(qrCodeSchema).mutation(async ({ input }) => {
-    return await prisma.qRCode.update({ where: { id: input }, data: input });
+    return await prisma.qRCode.update({ where: { id: input.id }, data: input });
   }),
 
   getRecipe: t.procedure.input(z.string().uuid()).query(async ({ input }) => {

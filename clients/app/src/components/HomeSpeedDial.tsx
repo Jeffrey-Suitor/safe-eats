@@ -2,6 +2,7 @@ import { FAB, Portal, Provider } from "react-native-paper";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState } from "react";
+import { defaultRecipe } from "@safe-eats/types/recipeTypes";
 
 type Props =
   | NativeStackScreenProps<RootStackParamList, "Appliances">
@@ -30,7 +31,11 @@ function HomeSpeedDial({ navigation, className = "" }: SpeedDialProps) {
             {
               icon: "chef-hat",
               label: "Add Recipe",
-              onPress: () => navigation.push("AddRecipe"),
+              onPress: () =>
+                navigation.push("ModifyRecipe", {
+                  recipe: defaultRecipe,
+                  modifyType: "add",
+                }),
             },
             {
               icon: "toaster-oven",
