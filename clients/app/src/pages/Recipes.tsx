@@ -1,34 +1,21 @@
-import { SafeAreaView, View, Modal, FlatList } from "react-native";
-import React, { useState } from "react";
+import { SafeAreaView, View, FlatList } from "react-native";
+import { useCallback, useEffect, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";
-import { secondsToUnits, unitToLong } from "../utils/timeConverter";
-import {
-  Card,
-  Button,
-  List,
-  Text,
-  ActivityIndicator,
-  Portal,
-} from "react-native-paper";
+import { Button, Text, ActivityIndicator } from "react-native-paper";
 import type { Recipe } from "@safe-eats/types/recipeTypes";
 import HomeSpeedDial from "../components/HomeSpeedDial";
 import { useToast } from "react-native-paper-toast";
-import DeleteModal from "../components/DeleteModal";
+import RecipeCard from "../components/RecipeCard";
+import { useModal } from "../components/ModalContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Recipes">;
 
-interface ListItemParam {
-  icon: string;
-  text: string;
-}
+function RecipesPage({ navigation }: Props) {
+  const { setModalVisible, setModalContent } = useModal();
 
-export const Recipes = ({ navigation }: Props) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const showModal = () => setModalVisible(true);
-  const hideModal = () => setModalVisible(false);
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
 
   const toaster = useToast();
@@ -49,11 +36,41 @@ export const Recipes = ({ navigation }: Props) => {
     },
   });
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     utils.recipe.all.invalidate();
     setRefreshing(false);
   }, []);
+
+  useEffect(() => {
+    setModalContent(
+      <View className="flex flex-grow items-center justify-center gap-4 bg-white p-4 pt-2">
+        <Text className="text-center" variant="titleMedium">
+          Are you sure you want to delete this recipe?
+        </Text>
+        <Button
+          mode="contained"
+          onPress={() => {
+            if (currentRecipe === null) {
+              console.error("currentRecipe is null");
+              return;
+            }
+            if (currentRecipe.id === undefined) {
+              console.error("currentRecipe.id is null");
+              return;
+            }
+            deleteRecipe(currentRecipe.id);
+            setModalVisible(false);
+          }}
+        >
+          Delete
+        </Button>
+        <Button mode="contained-tonal" onPress={() => setModalVisible(false)}>
+          Cancel
+        </Button>
+      </View>
+    );
+  }, [currentRecipe]);
 
   if (isLoading) {
     return (
@@ -66,110 +83,26 @@ export const Recipes = ({ navigation }: Props) => {
   return (
     <SafeAreaView>
       <View className="h-full w-full p-4">
-        <DeleteModal
-          visible={modalVisible}
-          hideModal={hideModal}
-          deleteText="Are you sure you want to delete this recipe?"
-          onDelete={() => {
-            if (currentRecipe === null) {
-              console.error("currentRecipe is null");
-              return;
-            }
-            if (currentRecipe.id === undefined) {
-              console.error("currentRecipe.id is null");
-              return;
-            }
-            deleteRecipe(currentRecipe.id);
-            hideModal();
-          }}
-        />
         <FlatList
+          className="mb-4"
           onRefresh={() => onRefresh()}
           refreshing={refreshing}
           data={recipes}
-          renderItem={({ item: recipe }) => {
-            const { val: ctVal, unit: ctUnit } = secondsToUnits(
-              recipe.cookingTime
-            );
-            const { val: edVal, unit: edUnit } = secondsToUnits(
-              recipe.expiryDate
-            );
-
-            const listItemParamMap: ListItemParam[] = [
-              {
-                icon: "file-document-outline",
-                text: `Description: ${recipe.description}`,
-              },
-              {
-                icon: "calendar-month-outline",
-                text: `Expiry Date: ${edVal} ${unitToLong(edVal, edUnit)}`,
-              },
-              {
-                icon: "toaster-oven",
-                text: `Appliance: ${recipe.applianceType.split("_").join(" ")}`,
-              },
-              {
-                icon: "thermometer",
-                text: `Temperature: ${recipe.temperature} ${recipe.temperatureUnit}`,
-              },
-              {
-                icon: "record-circle-outline",
-                text: `Appliance Mode: ${recipe.applianceMode}`,
-              },
-            ];
-            return (
-              <Card key={JSON.stringify(recipe)}>
-                <List.Accordion
-                  title={<Text variant="titleLarge">{recipe.name}</Text>}
-                  left={(props) => <List.Icon {...props} icon="chef-hat" />}
-                >
-                  {listItemParamMap.map((listParam) => {
-                    return (
-                      <List.Item
-                        key={listParam.text}
-                        title={listParam.text}
-                        left={(props) => (
-                          <List.Icon {...props} icon={listParam.icon} />
-                        )}
-                      />
-                    );
-                  })}
-                  <List.Item
-                    title=""
-                    left={() => (
-                      <View className="flex w-full flex-row justify-around">
-                        <Button
-                          icon="square-edit-outline"
-                          mode="outlined"
-                          onPress={() =>
-                            navigation.push("ModifyRecipe", {
-                              recipe: recipe,
-                              modifyType: "update",
-                            })
-                          }
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          icon="trash-can-outline"
-                          mode="contained-tonal"
-                          onPress={() => {
-                            setCurrentRecipe(recipe);
-                            showModal();
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </View>
-                    )}
-                  />
-                </List.Accordion>
-              </Card>
-            );
-          }}
+          renderItem={({ item: recipe }) => (
+            <RecipeCard
+              recipe={recipe}
+              navigation={navigation}
+              onDelete={() => {
+                setCurrentRecipe(recipe);
+                setModalVisible(true);
+              }}
+            />
+          )}
         />
         <HomeSpeedDial navigation={navigation} />
       </View>
     </SafeAreaView>
   );
-};
+}
+
+export default RecipesPage;

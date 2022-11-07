@@ -12,7 +12,7 @@ import { useToast } from "react-native-paper-toast";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Appliances">;
 
-function AppliancesPage({ navigation }: Props) {
+function AssignQrCodePage({ navigation }: Props) {
   const utils = trpc.useContext();
   const toaster = useToast();
   const { data: appliances, isLoading } = trpc.appliance.all.useQuery();
@@ -108,4 +108,4 @@ function AppliancesPage({ navigation }: Props) {
   );
 }
 
-export default AppliancesPage;
+export default AssignQrCodePage;

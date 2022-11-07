@@ -16,6 +16,7 @@ import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { applianceTypes, applianceModes } from "@safe-eats/types/applianceTypes";
 import { cookingTimeUnits, expiryDateUnits,unitsToSeconds } from "../utils/timeConverter";
 import { capitalize } from "../utils/stringHelpers";
+import defaultIcon from "react-native-paper/lib/typescript/components/MaterialCommunityIcon";
 
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);
@@ -23,7 +24,7 @@ const StyledDropDown = styled(DropDown);
 type Props = NativeStackScreenProps<RootStackParamList, "ModifyRecipe">;
 const dropDownValues = ["cookingTime", "expiryDate", "appliance", "temperatureUnit", "applianceMode"] as const;
 
-export const ModifyRecipe = ({ navigation, route }: Props) => {
+function ModifyRecipePage  ({ navigation, route }: Props) {
   const { recipe, modifyType } = route.params;
   const { mutate } = trpc.recipe[modifyType].useMutation({
     async onSuccess() {
@@ -205,3 +206,5 @@ export const ModifyRecipe = ({ navigation, route }: Props) => {
     </SafeAreaView >
   );
 };
+
+export default ModifyRecipePage;
