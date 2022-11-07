@@ -12,7 +12,8 @@ import { trpc } from "../utils/trpc";
 import DropDown from "react-native-paper-dropdown";
 import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
-import { applianceTypes, temperatureUnits, applianceModes, RecipeSchema } from "@safe-eats/types/recipeTypes";
+import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
+import { applianceTypes, applianceModes } from "@safe-eats/types/applianceTypes";
 import { cookingTimeUnits, expiryDateUnits,unitsToSeconds } from "../utils/timeConverter";
 import { capitalize } from "../utils/stringHelpers";
 

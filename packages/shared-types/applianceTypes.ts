@@ -9,13 +9,13 @@ export const applianceModes = [
 ] as const;
 
 export const ApplianceSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().uuid(),
   name: z.string(),
   type: z.enum(applianceTypes),
   temperatureC: z.number(),
   temperatureF: z.number(),
-  cookingStartTime: z.number(),
-  mode: z.enum(applianceModes),
+  cookingStartTime: z.date(),
+  recipeId: z.string().uuid().optional(),
 });
 
 export type Appliance = z.infer<typeof ApplianceSchema>;

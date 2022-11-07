@@ -4,10 +4,18 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";
 import { secondsToUnits, unitToLong } from "../utils/timeConverter";
-import { Card, Button, List, Text } from "react-native-paper";
+import {
+  Card,
+  Button,
+  List,
+  Text,
+  ActivityIndicator,
+  Portal,
+} from "react-native-paper";
 import type { Recipe } from "@safe-eats/types/recipeTypes";
 import HomeSpeedDial from "../components/HomeSpeedDial";
 import { useToast } from "react-native-paper-toast";
+import DeleteModal from "../components/DeleteModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Recipes">;
 
@@ -48,39 +56,33 @@ export const Recipes = ({ navigation }: Props) => {
   }, []);
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return (
+      <View className="flex h-full items-center justify-center">
+        <ActivityIndicator animating={true} size="large" />
+      </View>
+    );
   }
 
   return (
     <SafeAreaView>
       <View className="h-full w-full p-4">
-        <Modal visible={modalVisible} onDismiss={hideModal}>
-          <View className="flex flex-grow items-center justify-center gap-4">
-            <Text className="text-center" variant="titleMedium">
-              Are you sure you want to delete this recipe?
-            </Text>
-            <Button
-              mode="contained"
-              onPress={() => {
-                if (currentRecipe === null) {
-                  console.error("currentRecipe is null");
-                  return;
-                }
-                if (currentRecipe.id === undefined) {
-                  console.error("currentRecipe.id is null");
-                  return;
-                }
-                deleteRecipe(currentRecipe.id);
-                hideModal();
-              }}
-            >
-              Delete
-            </Button>
-            <Button mode="contained-tonal" onPress={hideModal}>
-              Cancel
-            </Button>
-          </View>
-        </Modal>
+        <DeleteModal
+          visible={modalVisible}
+          hideModal={hideModal}
+          deleteText="Are you sure you want to delete this recipe?"
+          onDelete={() => {
+            if (currentRecipe === null) {
+              console.error("currentRecipe is null");
+              return;
+            }
+            if (currentRecipe.id === undefined) {
+              console.error("currentRecipe.id is null");
+              return;
+            }
+            deleteRecipe(currentRecipe.id);
+            hideModal();
+          }}
+        />
         <FlatList
           onRefresh={() => onRefresh()}
           refreshing={refreshing}

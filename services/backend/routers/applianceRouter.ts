@@ -19,6 +19,10 @@ export const applianceRouter = router({
     return await prisma.appliance.findUnique({ where: { id: input } });
   }),
 
+  all: t.procedure.query(async () => {
+    return await prisma.appliance.findMany();
+  }),
+
   delete: t.procedure.input(z.string().uuid()).mutation(async ({ input }) => {
     return await prisma.appliance.delete({ where: { id: input } });
   }),
