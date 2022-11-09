@@ -1,80 +1,58 @@
 import { FlatList, SafeAreaView, View } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import HomeSpeedDial from "../components/HomeSpeedDial";
 import { trpc } from "../utils/trpc";
-import { Button, Text, ActivityIndicator } from "react-native-paper";
-import ApplianceCard from "../components/ApplianceCard";
-import { Appliance } from "@safe-eats/types/applianceTypes";
-import { useModal } from "../components/ModalContext";
+import { Text, ActivityIndicator, Button } from "react-native-paper";
+import { Recipe } from "@safe-eats/types/recipeTypes";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import RecipeSelectCard from "../components/RecipeSelectCard";
 import { useToast } from "react-native-paper-toast";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Appliances">;
+type Props = NativeStackScreenProps<RootStackParamList, "AssignQrCode">;
 
-function AssignQrCodePage({ navigation }: Props) {
-  const utils = trpc.useContext();
+function AssignQrCodePage({ navigation, route }: Props) {
+  const qrCode = route.params.qrCode;
   const toaster = useToast();
-  const { data: appliances, isLoading } = trpc.appliance.all.useQuery();
-  utils.recipe.all.prefetch();
-
-  const { mutate: deleteAppliance } = trpc.appliance.delete.useMutation({
-    async onSuccess() {
-      utils.appliance.all.invalidate();
-      toaster.show({
-        type: "success",
-        message: "Your appliance has been deleted.",
-        duration: 2000,
-        messageContainerStyle: {
-          flexDirection: "row",
-        },
-      });
-    },
-  });
-
+  const utils = trpc.useContext();
   const [refreshing, setRefreshing] = useState(false);
-  const [currentAppliance, setCurrentAppliance] = useState<Appliance | null>(
-    null
-  );
-  const { setModalVisible, setModalContent } = useModal();
+  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
 
-  useEffect(() => {
-    setModalContent(
-      <View className="flex flex-grow items-center justify-center gap-4 bg-white p-4 pt-2">
-        <Text className="text-center" variant="titleMedium">
-          Are you sure you want to delete this appliance?
-        </Text>
-        <Button
-          mode="contained"
-          onPress={() => {
-            if (currentAppliance === null) {
-              console.error("currentAppliance is null");
-              return;
-            }
-            if (currentAppliance.id === undefined) {
-              console.error("currentAppliance.id is null");
-              return;
-            }
-            deleteAppliance(currentAppliance.id);
-            setModalVisible(false);
-          }}
-        >
-          Delete
-        </Button>
-        <Button mode="contained-tonal" onPress={() => setModalVisible(false)}>
-          Cancel
-        </Button>
-      </View>
-    );
-  }, [currentAppliance]);
+  const { data: recipes, isLoading } = trpc.recipe.all.useQuery();
+  const { mutate: addQrCode, isLoading: isLoadingMutation } =
+    trpc.qrCode.add.useMutation({
+      async onError(error, variables, context) {
+        toaster.show({
+          type: "error",
+          message: `You've already used this QR and assigned it to ${currentRecipe?.name}`,
+          duration: 2000,
+          messageContainerStyle: {
+            flexDirection: "row",
+          },
+        });
+        setCurrentRecipe(null);
+      },
+      async onSuccess() {
+        utils.recipe.all.invalidate();
+        toaster.show({
+          type: "success",
+          message: `Your QR code was assigned to a ${currentRecipe?.name}.`,
+          duration: 2000,
+          messageContainerStyle: {
+            flexDirection: "row",
+          },
+        });
+        setCurrentRecipe(null);
+      },
+    });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    utils.appliance.all.invalidate();
+    utils.recipe.all.invalidate();
     setRefreshing(false);
   }, []);
 
-  if (isLoading) {
+  if (isLoading || isLoadingMutation) {
     return (
       <View className="flex h-full items-center justify-center">
         <ActivityIndicator animating={true} size="large" />
@@ -85,24 +63,46 @@ function AssignQrCodePage({ navigation }: Props) {
   return (
     <SafeAreaView>
       <View className="h-full w-full p-4">
+        <Text variant="titleSmall">
+          <MaterialCommunityIcons name="qrcode" size={24} />
+          {` ${qrCode}`}
+        </Text>
+
         <FlatList
           contentContainerStyle={{ justifyContent: "space-between" }}
           className="h-full"
           onRefresh={() => onRefresh()}
           refreshing={refreshing}
-          data={appliances}
-          renderItem={({ item: appliance }) => (
-            <ApplianceCard
-              appliance={appliance}
+          data={recipes}
+          renderItem={({ item: recipe }) => (
+            <RecipeSelectCard
+              recipe={recipe}
               navigation={navigation}
-              onDelete={() => {
-                setCurrentAppliance(appliance);
-                setModalVisible(true);
+              isSelected={recipe === currentRecipe}
+              onSelect={() => {
+                setCurrentRecipe(recipe);
               }}
             />
           )}
         />
-        <HomeSpeedDial navigation={navigation} />
+
+        <Button
+          disabled={!currentRecipe}
+          mode="contained"
+          onPress={() => {
+            if (currentRecipe === null) {
+              console.error("currentRecipe is null");
+              return;
+            }
+            if (currentRecipe.id === undefined) {
+              console.error("currentRecipe.id is null");
+              return;
+            }
+            addQrCode({ id: qrCode, recipeId: currentRecipe.id });
+          }}
+        >
+          Assign Recipe
+        </Button>
       </View>
     </SafeAreaView>
   );

@@ -13,10 +13,9 @@ import DropDown from "react-native-paper-dropdown";
 import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
 import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
-import { applianceTypes, applianceModes } from "@safe-eats/types/applianceTypes";
+import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
 import { cookingTimeUnits, expiryDateUnits,unitsToSeconds } from "../utils/timeConverter";
 import { capitalize } from "../utils/stringHelpers";
-import defaultIcon from "react-native-paper/lib/typescript/components/MaterialCommunityIcon";
 
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);

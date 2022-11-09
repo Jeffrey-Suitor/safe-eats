@@ -1,12 +1,6 @@
 import { z } from "zod";
-
-export const applianceTypes = ["Toaster_Oven"] as const;
-export const applianceModes = [
-  "Bake",
-  "Broil",
-  "Convection",
-  "Rotisserie",
-] as const;
+import { RecipeSchema } from "./recipeTypes";
+import { applianceTypes } from "./applianceConstants";
 
 export const ApplianceSchema = z.object({
   id: z.string().uuid(),
@@ -16,6 +10,7 @@ export const ApplianceSchema = z.object({
   temperatureF: z.number(),
   cookingStartTime: z.date(),
   recipeId: z.string().uuid().nullable(),
+  recipe: RecipeSchema.nullable(),
 });
 
 export type Appliance = z.infer<typeof ApplianceSchema>;
@@ -28,4 +23,5 @@ export const defaultAppliance: Appliance = {
   temperatureF: 0,
   cookingStartTime: new Date(),
   recipeId: null,
+  recipe: null,
 };

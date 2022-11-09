@@ -31,7 +31,7 @@ function ScanPage({ route, navigation }: Props) {
         break;
       case "appliance":
         navigation.navigate("ModifyAppliance", {
-          appliance: defaultAppliance,
+          applianceId: data,
           modifyType: "add",
         });
         break;

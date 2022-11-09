@@ -28,7 +28,12 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "tsx": "^3.11.0"
+    "tsx": "^3.11.0",
+    "expo-application": "~4.2.2",
+    "expo-constants": "~13.2.4",
+    "expo-device": "~4.3.0",
+    "expo-updates": "~0.14.6",
+    "@sentry/react-native": "4.2.2"
   },
   "packageManager": "npm@8.19.2"
 }

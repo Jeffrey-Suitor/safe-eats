@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { applianceTypes, applianceModes } from "./applianceTypes";
+import { applianceTypes, applianceModes } from "./applianceConstants";
 
 export const temperatureUnits = ["C", "F"] as const;
 

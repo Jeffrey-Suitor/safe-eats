@@ -41,9 +41,10 @@ model Recipe {
 }
 
 model QRCode {
-  id       String @id @default(uuid())
-  recipe   Recipe @relation(references: [id], fields: [recipeId], onDelete: Cascade)
-  recipeId String
+  id        String   @id @default(uuid())
+  recipe    Recipe   @relation(references: [id], fields: [recipeId], onDelete: Cascade)
+  recipeId  String
+  createdAt DateTime @default(now())
 }
 
 model Appliance {

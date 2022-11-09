@@ -1,11 +1,17 @@
 import { View } from "react-native";
-import { Surface, Text, TouchableRipple, Button } from "react-native-paper";
+import {
+  Surface,
+  Text,
+  TouchableRipple,
+  Button,
+  IconButton,
+} from "react-native-paper";
 import type { Appliance } from "@safe-eats/types/applianceTypes";
 import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import RecipeCard from "./RecipeCard";
+import RecipeInfo from "./RecipeInfo";
 
 interface ApplianceCardProps {
   appliance: Appliance;
@@ -21,7 +27,10 @@ function ApplianceCard({
   navigation,
   onDelete,
 }: ApplianceCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const { recipe } = appliance;
+  const [applianceExpanded, setApplianceExpanded] = useState(false);
+  const [recipeExpanded, setRecipeExpanded] = useState(false);
+  const active = appliance.cookingStartTime !== null;
 
   const applianceInfoMap = [
     {
@@ -34,22 +43,22 @@ function ApplianceCard({
     <Surface className="mb-4 bg-white">
       <TouchableRipple
         onPress={() => {
-          setExpanded((prev) => !prev);
+          setApplianceExpanded((prev) => !prev);
         }}
       >
         <View className="p-4">
           <View className="flex-row justify-between pb-2">
             <View></View>
-            <Text variant="titleLarge">
+            <Text variant="titleLarge" className="text-primary">
               <MaterialCommunityIcons name={"toaster-oven"} size={24} />
               {` ${appliance.name}`}
             </Text>
             <MaterialCommunityIcons
-              name={expanded ? "chevron-up" : "chevron-down"}
+              name={applianceExpanded ? "chevron-up" : "chevron-down"}
               size={24}
             />
           </View>
-          {expanded && (
+          {applianceExpanded && (
             <View className="gap-3">
               {applianceInfoMap.map((applianceInfo) => {
                 return (
@@ -62,13 +71,36 @@ function ApplianceCard({
                   </Text>
                 );
               })}
+
+              {recipe && (
+                <View>
+                  <View className="flex flex-row items-center pr-4">
+                    <Text className="leading-5">
+                      <MaterialCommunityIcons name={"chef-hat"} size={20} />
+                      {` Recipe Name: ${recipe.name}`}
+                    </Text>
+                    <IconButton
+                      icon="information-outline"
+                      size={20}
+                      onPress={() => setRecipeExpanded((prev) => !prev)}
+                    />
+                  </View>
+                  {recipeExpanded && (
+                    <RecipeInfo
+                      recipe={recipe}
+                      containerClassName="gap-4 pl-4 flex"
+                    />
+                  )}
+                </View>
+              )}
+
               <View className="flex w-full flex-row justify-around">
                 <Button
                   icon="square-edit-outline"
                   mode="outlined"
                   onPress={() =>
                     navigation.push("ModifyAppliance", {
-                      appliance: appliance,
+                      applianceId: appliance.id,
                       modifyType: "update",
                     })
                   }

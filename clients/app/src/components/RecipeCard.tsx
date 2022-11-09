@@ -2,55 +2,22 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Recipe } from "@safe-eats/types/recipeTypes";
 import { View } from "react-native";
 import { Text, Button, Surface, TouchableRipple } from "react-native-paper";
-import { secondsToUnits, unitToLong } from "../utils/timeConverter";
 import { RootStackParamList } from "../_app";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-
+import DeleteRecipeButton from "./DeleteRecipeButton";
+import RecipeInfo from "./RecipeInfo";
 interface RecipeCardProps {
   recipe: Recipe;
   navigation: NativeStackScreenProps<
     RootStackParamList,
     "Recipes"
   >["navigation"];
-  onDelete: () => void;
-}
-interface TextIconInterface {
-  icon: string;
-  text: string;
 }
 
-function RecipeCard({ recipe, navigation, onDelete }: RecipeCardProps) {
+function RecipeCard({ recipe, navigation }: RecipeCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const { val: ctVal, unit: ctUnit } = secondsToUnits(recipe.cookingTime);
-  const { val: edVal, unit: edUnit } = secondsToUnits(recipe.expiryDate);
 
-  const recipeInfoMap: TextIconInterface[] = [
-    {
-      icon: "file-document-outline",
-      text: `Description: ${recipe.description}`,
-    },
-    {
-      icon: "clock-outline",
-      text: `Cooking Time: ${ctVal} ${unitToLong(ctVal, ctUnit)}`,
-    },
-    {
-      icon: "calendar-month-outline",
-      text: `Expiry Date: ${edVal} ${unitToLong(edVal, edUnit)}`,
-    },
-    {
-      icon: "toaster-oven",
-      text: `Appliance: ${recipe.applianceType.split("_").join(" ")}`,
-    },
-    {
-      icon: "thermometer",
-      text: `Temperature: ${recipe.temperature} ${recipe.temperatureUnit}`,
-    },
-    {
-      icon: "record-circle-outline",
-      text: `Appliance Mode: ${recipe.applianceMode}`,
-    },
-  ];
   return (
     <View>
       <Surface key={recipe.id} className="bg-white">
@@ -72,18 +39,8 @@ function RecipeCard({ recipe, navigation, onDelete }: RecipeCardProps) {
               />
             </View>
             {expanded && (
-              <View className="gap-3">
-                {recipeInfoMap.map((recipeInfo) => {
-                  return (
-                    <Text key={recipeInfo.text}>
-                      <MaterialCommunityIcons
-                        name={recipeInfo.icon as any}
-                        size={20}
-                      />
-                      {` ${recipeInfo.text}`}
-                    </Text>
-                  );
-                })}
+              <View className="gap-4 p-4">
+                <RecipeInfo recipe={recipe} containerClassName="flex gap-4" />
                 <View className="flex w-full flex-row justify-around">
                   <Button
                     icon="square-edit-outline"
@@ -97,13 +54,12 @@ function RecipeCard({ recipe, navigation, onDelete }: RecipeCardProps) {
                   >
                     Edit
                   </Button>
-                  <Button
-                    icon="trash-can-outline"
-                    mode="contained-tonal"
-                    onPress={onDelete}
-                  >
-                    Delete
-                  </Button>
+                  <DeleteRecipeButton
+                    recipe={recipe}
+                    iconSize={24}
+                    iconMode="contained-tonal"
+                    showText={true}
+                  />
                 </View>
               </View>
             )}
