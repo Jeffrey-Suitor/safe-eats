@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import RecipeInfo from "./RecipeInfo";
+import CircularProgress from "react-native-circular-progress-indicator";
 
 interface ApplianceCardProps {
   appliance: Appliance;
@@ -31,6 +32,15 @@ function ApplianceCard({
   const [applianceExpanded, setApplianceExpanded] = useState(false);
   const [recipeExpanded, setRecipeExpanded] = useState(false);
   const active = appliance.cookingStartTime !== null;
+  const applianceTemperatureUnit = recipe?.temperatureUnit === "C" ? "C" : "F";
+  const applianceTemperature =
+    recipe?.temperatureUnit === "C"
+      ? appliance.temperatureC
+      : appliance.temperatureF;
+  const recipeTemperature =
+    recipe?.temperatureUnit === "C"
+      ? recipe?.temperature || 150
+      : recipe?.temperature || 300;
 
   const applianceInfoMap = [
     {
@@ -58,6 +68,12 @@ function ApplianceCard({
               size={24}
             />
           </View>
+
+          <View className="flex flex-row justify-evenly">
+            <CircularProgress value={58} />
+            <CircularProgress value={58} />
+          </View>
+
           {applianceExpanded && (
             <View className="gap-3">
               {applianceInfoMap.map((applianceInfo) => {

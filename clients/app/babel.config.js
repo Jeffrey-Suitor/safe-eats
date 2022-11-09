@@ -1,7 +1,11 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    plugins: ["nativewind/babel", "react-native-reanimated/plugin"],
+    plugins: [
+      "nativewind/babel",
+      "transform-inline-environment-variables",
+      "react-native-reanimated/plugin",
+    ],
     presets: ["babel-preset-expo"],
     env: {
       production: {
