@@ -67,7 +67,7 @@ const CombinedDarkTheme = {
 };
 
 Sentry.init({
-  dsn: "https://3bd1e9fbd63b4b4c9f662bb48c666c0c@o4504119299538944.ingest.sentry.io/4504119333421056",
+  dsn: process.env.SENTRY_DSN,
   enableInExpoDevelopment: true,
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });

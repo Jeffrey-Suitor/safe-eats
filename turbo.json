@@ -1,5 +1,5 @@
 {
-  "globalDependencies": ["$NODE_ENV", ".env", "SENTRY_DSN"],
+  "globalDependencies": [".env"],
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {
@@ -13,5 +13,6 @@
       "cache": false
     },
     "postinstall": {}
-  }
+  },
+  "globalEnv": ["NODE_ENV"]
 }

@@ -1,6 +1,8 @@
 import { createTRPCReact } from "@trpc/react";
 import { createTRPCProxyClient, createWSClient, wsLink } from "@trpc/client";
 import type { AppRouter } from "@safe-eats/server/routers/_app";
+import { splitLink } from "@trpc/client/links/splitLink";
+import { httpLink } from "@trpc/client/links/httpLink";
 
 /**
  * A set of typesafe hooks for consuming your API.
@@ -12,7 +14,7 @@ export const trpc = createTRPCReact<AppRouter>();
  * setting the baseUrl to your production API URL.
  */
 import Constants from "expo-constants";
-const getBaseUrl = () => {
+const getBaseUrl = (serverType: "http" | "ws") => {
   /**
    * Gets the IP address of your host-machine. If it cannot automatically find it,
    * you'll have to manually set it. NOTE: Port 3000 should work for most but confirm
@@ -21,12 +23,14 @@ const getBaseUrl = () => {
   const localhost = Constants.manifest?.debuggerHost?.split(":")[0];
   if (!localhost)
     throw new Error("failed to get localhost, configure it manually");
-  return `ws://${localhost}:3001`;
+  return serverType == "ws"
+    ? `ws://${localhost}:3001`
+    : `http://${localhost}:3001`;
 };
 
 // create persistent WebSocket connection
 const wsClient = createWSClient({
-  url: `${getBaseUrl()}/api/trpc`,
+  url: `${getBaseUrl("ws")}`,
 });
 
 /**
@@ -48,8 +52,17 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({
     trpc.createClient({
       transformer: superjson,
       links: [
-        wsLink({
-          client: wsClient,
+        // call subscriptions through websockets and the rest over http
+        splitLink({
+          condition(op) {
+            return op.type === "subscription";
+          },
+          true: wsLink({
+            client: wsClient,
+          }),
+          false: httpLink({
+            url: `${getBaseUrl("http")}`,
+          }),
         }),
       ],
     })

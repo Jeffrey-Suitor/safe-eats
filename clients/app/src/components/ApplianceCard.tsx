@@ -70,8 +70,19 @@ function ApplianceCard({
           </View>
 
           <View className="flex flex-row justify-evenly">
-            <CircularProgress value={58} />
-            <CircularProgress value={58} />
+            <CircularProgress
+              value={applianceTemperature}
+              progressValueColor={"#fff"}
+              maxValue={recipeTemperature + 30}
+              title={`${applianceTemperature} ${applianceTemperatureUnit}`}
+              rotation={-270}
+              strokeColorConfig={[
+                { color: "gray", value: 0 },
+                { color: "blue", value: applianceTemperature - 30 },
+                { color: "green", value: applianceTemperature - 5 },
+                { color: "red", value: applianceTemperature + 5 },
+              ]}
+            />
           </View>
 
           {applianceExpanded && (
