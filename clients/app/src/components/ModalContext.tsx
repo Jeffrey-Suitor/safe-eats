@@ -19,7 +19,7 @@ const ModalContext = createContext<ModalContextInterface>({
 
 export const useModal = () => useContext(ModalContext);
 
-export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
+export const ModalProvider = ({ children }: { children: JSX.Element }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 

@@ -26,6 +26,10 @@ import {
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native";
 import * as Sentry from "sentry-expo";
+import PushNotificationWrapper from "./components/PushNotificationsWrapper";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+import { Button } from "react-native";
 
 type ModifyType = "add" | "update";
 type ScanType = "qr-code" | "appliance";
@@ -39,6 +43,8 @@ export type RootStackParamList = {
   ModifyRecipe: { recipe: Recipe; modifyType: ModifyType };
   AssignQrCode: { qrCode: string };
 };
+
+WebBrowser.maybeCompleteAuthSession();
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
   light: NavigationDefaultTheme,
@@ -105,49 +111,66 @@ const HomePage = () => {
 };
 
 const App = () => {
+  React.useEffect(() => {
+    WebBrowser.warmUpAsync();
+
+    return () => {
+      WebBrowser.coolDownAsync();
+    };
+  }, []);
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "600679286779-fppu5b515elfvaruo945urr4lf4q58ev.apps.googleusercontent.com",
+  });
+
   return (
     <TRPCProvider>
       <SafeAreaProvider>
         <PaperProvider theme={CombinedDefaultTheme}>
           <ToastProvider>
             <ModalProvider>
-              <NavigationContainer theme={CombinedDefaultTheme}>
-                <Stack.Navigator>
-                  <Stack.Screen name="Home" component={HomePage} />
-                  <Stack.Screen
-                    name="Scan"
-                    component={ScanPage}
-                    options={({ route }) => ({
-                      title: `Scan ${
-                        route.params.scanType === "qr-code"
-                          ? "QR Code"
-                          : "Appliance"
-                      }`,
-                    })}
-                  />
-                  <Stack.Screen
-                    name="ModifyRecipe"
-                    component={ModifyRecipePage}
-                    options={({ route }) => ({
-                      title: `${capitalize(route.params.modifyType)} Recipe`,
-                    })}
-                  />
-                  <Stack.Screen
-                    name="ModifyAppliance"
-                    component={ModifyAppliancePage}
-                    options={({ route }) => ({
-                      title: `${capitalize(route.params.modifyType)} Appliance`,
-                    })}
-                  />
-                  <Stack.Screen
-                    name="AssignQrCode"
-                    component={AssignQrCodePage}
-                    options={() => ({
-                      title: "Assign QR Code",
-                    })}
-                  />
-                </Stack.Navigator>
-              </NavigationContainer>
+              <PushNotificationWrapper>
+                <NavigationContainer theme={CombinedDefaultTheme}>
+                  <Stack.Navigator>
+                    <Stack.Screen name="Home" component={HomePage} />
+                    <Stack.Screen
+                      name="Scan"
+                      component={ScanPage}
+                      options={({ route }) => ({
+                        title: `Scan ${
+                          route.params.scanType === "qr-code"
+                            ? "QR Code"
+                            : "Appliance"
+                        }`,
+                      })}
+                    />
+                    <Stack.Screen
+                      name="ModifyRecipe"
+                      component={ModifyRecipePage}
+                      options={({ route }) => ({
+                        title: `${capitalize(route.params.modifyType)} Recipe`,
+                      })}
+                    />
+                    <Stack.Screen
+                      name="ModifyAppliance"
+                      component={ModifyAppliancePage}
+                      options={({ route }) => ({
+                        title: `${capitalize(
+                          route.params.modifyType
+                        )} Appliance`,
+                      })}
+                    />
+                    <Stack.Screen
+                      name="AssignQrCode"
+                      component={AssignQrCodePage}
+                      options={() => ({
+                        title: "Assign QR Code",
+                      })}
+                    />
+                  </Stack.Navigator>
+                </NavigationContainer>
+              </PushNotificationWrapper>
             </ModalProvider>
           </ToastProvider>
         </PaperProvider>

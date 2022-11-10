@@ -1,5 +1,5 @@
 import { Recipe } from "@safe-eats/types/recipeTypes";
-import { secondsToUnits, unitToLong } from "../utils/timeConverter";
+import { millisecondsToUnits, unitToLong } from "../utils/timeConverter";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Text } from "react-native-paper";
 import { View } from "react-native";
@@ -20,8 +20,8 @@ function RecipeInfo({
   containerClassName,
   stringClassName,
 }: RecipeInfoProps) {
-  const { val: ctVal, unit: ctUnit } = secondsToUnits(recipe.cookingTime);
-  const { val: edVal, unit: edUnit } = secondsToUnits(recipe.expiryDate);
+  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(recipe.cookingTime);
+  const { val: edVal, unit: edUnit } = millisecondsToUnits(recipe.expiryDate);
   const recipeInfoMap: TextIconInterface[] = [
     {
       icon: "file-document-outline",
@@ -41,7 +41,7 @@ function RecipeInfo({
     },
     {
       icon: "thermometer",
-      text: `Temperature: ${recipe.temperature} ${recipe.temperatureUnit}`,
+      text: `Temperature: ${recipe.temperature}°${recipe.temperatureUnit}`,
     },
     {
       icon: "record-circle-outline",

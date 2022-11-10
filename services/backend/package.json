@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@prisma/client": "^4.2.1",
+    "bcrypt": "^5.1.0",
     "cross-env": "^7.0.3",
+    "expo-server-sdk": "^3.7.0",
+    "next-auth": "^4.16.4",
     "superjson": "^1.11.0",
     "zod": "^3.19.1"
   },

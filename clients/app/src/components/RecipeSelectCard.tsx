@@ -6,7 +6,7 @@ import DeleteRecipeButton from "./DeleteRecipeButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { useState } from "react";
-import { secondsToUnits, unitToLong } from "../utils/timeConverter";
+import { millisecondsToUnits, unitToLong } from "../utils/timeConverter";
 import RecipeInfo from "./RecipeInfo";
 
 interface RecipeSelectCardProps {
@@ -26,8 +26,8 @@ function RecipeSelectCard({
   navigation,
 }: RecipeSelectCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const { val: ctVal, unit: ctUnit } = secondsToUnits(recipe.cookingTime);
-  const { val: edVal, unit: edUnit } = secondsToUnits(recipe.expiryDate);
+  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(recipe.cookingTime);
+  const { val: edVal, unit: edUnit } = millisecondsToUnits(recipe.expiryDate);
 
   interface TextIconInterface {
     icon: string;

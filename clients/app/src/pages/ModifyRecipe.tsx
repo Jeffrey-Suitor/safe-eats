@@ -14,7 +14,7 @@ import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
 import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
-import { cookingTimeUnits, expiryDateUnits,unitsToSeconds } from "../utils/timeConverter";
+import { cookingTimeUnits, expiryDateUnits,unitsToMilliseconds } from "../utils/timeConverter";
 import { capitalize } from "../utils/stringHelpers";
 
 const StyledTextInput = styled(TextInput);
@@ -81,7 +81,7 @@ function ModifyRecipePage  ({ navigation, route }: Props) {
               keyboardType="number-pad"
               label=<Text><MaterialCommunityIcons name={"clock-time-five-outline"} size={20} /> Cooking Time</Text>
               placeholder="Ex: 10"
-              onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, cookingTime: unitsToSeconds(Number(textVal), cookingTimeUnit) } })}
+              onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, cookingTime: unitsToMilliseconds(Number(textVal), cookingTimeUnit) } })}
             />
             <StyledDropDown
               className="w-1/4"
@@ -108,7 +108,7 @@ function ModifyRecipePage  ({ navigation, route }: Props) {
               placeholder="Ex: 4"
               onChangeText={(textVal) =>
                 setNewRecipe((prev) => {
-                  return { ...prev, expiryDate: unitsToSeconds(Number(textVal), expiryDateUnit) };
+                  return { ...prev, expiryDate: unitsToMilliseconds(Number(textVal), expiryDateUnit) };
                 })
               }
             />

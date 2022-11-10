@@ -13,12 +13,12 @@ const unitShortToLong: { [key in combinedUnits]: string } = {
   Week: "Week",
 };
 
-const unitsInSeconds: { [key in combinedUnits]: number } = {
-  Week: 604800,
-  Day: 86400,
-  Hour: 3600,
-  Min: 60,
-  Sec: 1,
+const unitsInMilliseconds: { [key in combinedUnits]: number } = {
+  Week: 604800000,
+  Day: 86400000,
+  Hour: 3600000,
+  Min: 60000,
+  Sec: 1000,
 };
 
 export const unitToLong = (val: number, unit: combinedUnits) => {
@@ -26,24 +26,24 @@ export const unitToLong = (val: number, unit: combinedUnits) => {
   return val === 1 ? longUnit : longUnit + "s";
 };
 
-export const unitsToSeconds = (
+export const unitsToMilliseconds = (
   val: number,
   unit: typeof cookingTimeUnits[number] | typeof expiryDateUnits[number]
 ): number => {
-  return val * unitsInSeconds[unit];
+  return val * unitsInMilliseconds[unit];
 };
 
-export const secondsToUnits = (
+export const millisecondsToUnits = (
   seconds: number
 ): {
   val: number;
   unit: combinedUnits;
 } => {
-  for (const unitUnTyped in unitsInSeconds) {
+  for (const unitUnTyped in unitsInMilliseconds) {
     const unit = unitUnTyped as combinedUnits;
-    if (seconds % unitsInSeconds[unit] === 0) {
+    if (seconds % unitsInMilliseconds[unit] === 0) {
       return {
-        val: seconds / unitsInSeconds[unit],
+        val: seconds / unitsInMilliseconds[unit],
         unit,
       };
     }

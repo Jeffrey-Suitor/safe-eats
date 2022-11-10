@@ -25,6 +25,12 @@ enum ApplianceMode {
   Rotisserie
 }
 
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
 model Recipe {
   id              String          @id @default(uuid())
   name            String
@@ -61,11 +67,13 @@ model Appliance {
 }
 
 model User {
-  id         String            @id @default(uuid())
-  name       String
-  email      String
-  appliances UserToAppliance[]
-  recipes    UserToRecipe[]
+  id                    String            @id @default(uuid())
+  name                  String
+  email                 String            @unique @db.VarChar(255)
+  role                  Role              @default(USER)
+  appliances            UserToAppliance[]
+  recipes               UserToRecipe[]
+  pushNotificationToken String?
 }
 
 model UserToAppliance {

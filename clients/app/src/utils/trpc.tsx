@@ -44,7 +44,7 @@ import superjson from "superjson";
 // @ts-ignore
 import { connectToDevTools } from "react-devtools-core";
 
-export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({
+export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
   children,
 }) => {
   const [queryClient] = React.useState(() => new QueryClient());

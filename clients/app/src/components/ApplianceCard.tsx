@@ -7,7 +7,7 @@ import {
   IconButton,
 } from "react-native-paper";
 import type { Appliance } from "@safe-eats/types/applianceTypes";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -22,30 +22,125 @@ interface ApplianceCardProps {
   >["navigation"];
   onDelete: () => void;
 }
+interface ApplianceTemperatureDialProps {
+  appliance: Appliance;
+}
 
-function ApplianceCard({
+function ApplianceTemperatureDial({
   appliance,
-  navigation,
-  onDelete,
-}: ApplianceCardProps) {
+}: ApplianceTemperatureDialProps) {
   const { recipe } = appliance;
-  const [applianceExpanded, setApplianceExpanded] = useState(false);
-  const [recipeExpanded, setRecipeExpanded] = useState(false);
-  const active = appliance.cookingStartTime !== null;
   const applianceTemperatureUnit = recipe?.temperatureUnit === "C" ? "C" : "F";
   const applianceTemperature =
     recipe?.temperatureUnit === "C"
       ? appliance.temperatureC
       : appliance.temperatureF;
   const recipeTemperature =
-    recipe?.temperatureUnit === "C"
-      ? recipe?.temperature || 150
-      : recipe?.temperature || 300;
+    recipe?.temperatureUnit === "C" ? recipe?.temperature : recipe?.temperature;
+
+  const strokeColorConfig =
+    recipeTemperature === undefined
+      ? [
+          { color: "gray", value: 0 },
+          { color: "gray", value: 1 },
+        ]
+      : [
+          { color: "gray", value: 0 },
+          { color: "gray", value: recipeTemperature - 50 },
+          { color: "blue", value: recipeTemperature - 30 },
+          { color: "green", value: recipeTemperature - 5 },
+          { color: "red", value: recipeTemperature + 5 },
+        ];
+
+  const valueColor = (temp: number, target?: number) => {
+    if (!target) {
+      return "gray";
+    } else if (temp > target + 5) {
+      return "red";
+    } else if (temp > target - 5) {
+      return "green";
+    } else if (temp > target - 30) {
+      return "blue";
+    } else {
+      return "gray";
+    }
+  };
+
+  return (
+    <CircularProgress
+      value={applianceTemperature}
+      maxValue={
+        recipeTemperature ? recipeTemperature + 30 : applianceTemperature
+      }
+      title={
+        recipe == null
+          ? undefined
+          : `/${recipeTemperature}°${applianceTemperatureUnit}`
+      }
+      strokeColorConfig={strokeColorConfig}
+      titleColor="#000000"
+      progressValueColor={valueColor(applianceTemperature, recipeTemperature)}
+    />
+  );
+}
+
+function ApplianceCookingTimeDial({
+  appliance,
+}: ApplianceTemperatureDialProps) {
+  const { recipe, cookingStartTime } = appliance;
+
+  if (recipe === null) {
+    return null;
+  }
+
+  const recipeEndTime = cookingStartTime.getTime() + recipe.cookingTime;
+  const [timeRemaining, setTimeRemaining] = useState(
+    recipeEndTime - Date.now()
+  );
+
+  useEffect(() => {
+    setInterval(() => {
+      setTimeRemaining(recipeEndTime - Date.now());
+    }, 1000);
+  }, []);
+
+  const RemainingTimeDial = useMemo(
+    () => (
+      <CircularProgress
+        value={timeRemaining + 8768712369808}
+        maxValue={recipeEndTime}
+        initialValue={recipeEndTime}
+        inActiveStrokeColor={"#2ecc71"}
+        inActiveStrokeOpacity={0.2}
+        showProgressValue={false}
+        title={new Date(timeRemaining)
+          .toTimeString()
+          .replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1")}
+        subtitle={"Remaining"}
+      />
+    ),
+    [timeRemaining]
+  );
+  return RemainingTimeDial;
+}
+
+function ApplianceCard({
+  appliance,
+  navigation,
+  onDelete,
+}: ApplianceCardProps) {
+  const { recipe, temperatureC, temperatureF, type } = appliance;
+  const [applianceExpanded, setApplianceExpanded] = useState(false);
+  const [recipeExpanded, setRecipeExpanded] = useState(false);
 
   const applianceInfoMap = [
     {
       icon: "toaster-oven",
-      text: `Appliance Type: ${appliance.type.split("_").join(" ")}`,
+      text: `Appliance Type: ${type.split("_").join(" ")}`,
+    },
+    {
+      icon: "thermometer",
+      text: `Temperature: ${temperatureF}°F | ${temperatureC}°C`,
     },
   ];
 
@@ -69,24 +164,13 @@ function ApplianceCard({
             />
           </View>
 
-          <View className="flex flex-row justify-evenly">
-            <CircularProgress
-              value={applianceTemperature}
-              progressValueColor={"#fff"}
-              maxValue={recipeTemperature + 30}
-              title={`${applianceTemperature} ${applianceTemperatureUnit}`}
-              rotation={-270}
-              strokeColorConfig={[
-                { color: "gray", value: 0 },
-                { color: "blue", value: applianceTemperature - 30 },
-                { color: "green", value: applianceTemperature - 5 },
-                { color: "red", value: applianceTemperature + 5 },
-              ]}
-            />
+          <View className="mb-4 flex flex-row justify-evenly">
+            <ApplianceTemperatureDial appliance={appliance} />
+            <ApplianceCookingTimeDial appliance={appliance} />
           </View>
 
           {applianceExpanded && (
-            <View className="gap-3">
+            <View className="gap-4">
               {applianceInfoMap.map((applianceInfo) => {
                 return (
                   <Text key={applianceInfo.text}>
@@ -100,9 +184,9 @@ function ApplianceCard({
               })}
 
               {recipe && (
-                <View>
-                  <View className="flex flex-row items-center pr-4">
-                    <Text className="leading-5">
+                <>
+                  <View className="flex flex-row items-center pl-4">
+                    <Text>
                       <MaterialCommunityIcons name={"chef-hat"} size={20} />
                       {` Recipe Name: ${recipe.name}`}
                     </Text>
@@ -115,10 +199,10 @@ function ApplianceCard({
                   {recipeExpanded && (
                     <RecipeInfo
                       recipe={recipe}
-                      containerClassName="gap-4 pl-4 flex"
+                      containerClassName="gap-4 pl-8 flex"
                     />
                   )}
-                </View>
+                </>
               )}
 
               <View className="flex w-full flex-row justify-around">
