@@ -2,6 +2,8 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import React, { useState, useEffect, useRef } from "react";
 import { Platform } from "react-native";
+import { setJwt, trpc } from "../utils/trpc";
+import { useAuth } from "./AuthContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -14,9 +16,21 @@ Notifications.setNotificationHandler({
 function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
+  const { setUser } = useAuth();
+
+  const { mutate: updatePushToken } = trpc.user.setExpoPushToken.useMutation({
+    onSuccess: ({ user, jwt }) => {
+      console.log("Push token updated");
+      setJwt(jwt);
+      setUser(user);
+    },
+  });
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => console.log(token));
+    registerForPushNotificationsAsync().then((token) => {
+      console.log(token);
+      updatePushToken(token);
+    });
 
     // This listener is fired whenever a notification is received while the app is foregrounded
     notificationListener.current =
@@ -56,7 +70,6 @@ async function registerForPushNotificationsAsync() {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log(token);
   } else {
     alert("Must use physical device for Push Notifications");
   }

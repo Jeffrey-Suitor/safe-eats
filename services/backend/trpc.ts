@@ -11,6 +11,7 @@
 import { Context } from "./context";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { EventEmitter } from "events";
 
 const t = initTRPC.context<Context>().create({
   /**
@@ -52,7 +53,7 @@ export const mergeRouters = t.mergeRouters;
 const isAuthed = middleware(({ next, ctx }) => {
   const user = ctx.session?.user;
 
-  if (!user?.name) {
+  if (!user?.email) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
@@ -70,3 +71,5 @@ const isAuthed = middleware(({ next, ctx }) => {
  * Protected base procedure
  */
 export const authedProcedure = t.procedure.use(isAuthed);
+
+export const ee = new EventEmitter();

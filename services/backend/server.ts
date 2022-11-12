@@ -1,3 +1,5 @@
+import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config({ path: "../../.env" });
 import { createContext } from "./context";
 import { appRouter } from "./routers/_app";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";

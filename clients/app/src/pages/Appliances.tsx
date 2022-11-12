@@ -10,9 +10,12 @@ import { Appliance } from "@safe-eats/types/applianceTypes";
 import { useModal } from "../components/ModalContext";
 import { useToast } from "react-native-paper-toast";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Appliances">;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "Appliances"
+>;
 
-function AppliancesPage({ navigation }: Props) {
+function AppliancesPage({ navigation }: NavigationProps) {
   const utils = trpc.useContext();
   const toaster = useToast();
   const { data: appliances, isLoading } = trpc.appliance.all.useQuery();
@@ -37,6 +40,14 @@ function AppliancesPage({ navigation }: Props) {
     null
   );
   const { setModalVisible, setModalContent } = useModal();
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setModalContent(
@@ -99,6 +110,7 @@ function AppliancesPage({ navigation }: Props) {
                 setCurrentAppliance(appliance);
                 setModalVisible(true);
               }}
+              currentTime={currentTime}
             />
           )}
         />

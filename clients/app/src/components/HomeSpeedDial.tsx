@@ -4,16 +4,15 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState } from "react";
 import { defaultRecipe } from "@safe-eats/types/recipeTypes";
 
-type Props =
+export type NavigationProps =
   | NativeStackScreenProps<RootStackParamList, "Appliances">
   | NativeStackScreenProps<RootStackParamList, "Recipes">;
 
 interface SpeedDialProps {
-  navigation: Props["navigation"];
-  className?: string;
+  navigation: NavigationProps["navigation"];
 }
 
-function HomeSpeedDial({ navigation, className = "" }: SpeedDialProps) {
+function HomeSpeedDial({ navigation }: SpeedDialProps) {
   const [open, setOpen] = useState(false);
   return (
     <Provider>

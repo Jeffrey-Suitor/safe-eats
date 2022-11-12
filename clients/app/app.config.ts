@@ -3,9 +3,10 @@ dotenv.config({ path: "../../.env" });
 
 export default {
   expo: {
-    name: "safe-eats",
+    name: "safe-eats-app",
     plugins: ["sentry-expo"],
     slug: "safe-eats-app",
+    scheme: "safe-eats-app",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",

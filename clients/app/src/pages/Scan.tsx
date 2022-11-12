@@ -5,11 +5,13 @@ import React, { useState, useEffect } from "react";
 import { SafeAreaView, View } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import { Button, Text } from "react-native-paper";
-import { defaultAppliance } from "@safe-eats/types/applianceTypes";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Scan">;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "Scan"
+>;
 
-function ScanPage({ route, navigation }: Props) {
+function ScanPage({ route, navigation }: NavigationProps) {
   const { scanType } = route.params;
   const [hasPermission, setHasPermission] = useState(false);
   const [scanned, setScanned] = useState(false);

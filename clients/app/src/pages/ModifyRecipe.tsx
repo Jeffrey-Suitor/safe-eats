@@ -20,10 +20,10 @@ import { capitalize } from "../utils/stringHelpers";
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);
 
-type Props = NativeStackScreenProps<RootStackParamList, "ModifyRecipe">;
+ export type NavigationProps = NativeStackScreenProps<RootStackParamList, "ModifyRecipe">;
 const dropDownValues = ["cookingTime", "expiryDate", "appliance", "temperatureUnit", "applianceMode"] as const;
 
-function ModifyRecipePage  ({ navigation, route }: Props) {
+function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
   const { recipe, modifyType } = route.params;
   const { mutate } = trpc.recipe[modifyType].useMutation({
     async onSuccess() {
@@ -133,7 +133,7 @@ function ModifyRecipePage  ({ navigation, route }: Props) {
         <View>
           <StyledDropDown
             // @ts-ignore
-            label=<Text><MaterialCommunityIcons name={"toaster-oven"} size={20} /> Appliance</Text> //@ts-ignore
+            label=<Text><MaterialCommunityIcons name={"toaster-oven"} size={20} /> Appliance</Text>
             mode={"flat"}
             visible={showDropDown === "appliance"}
             showDropDown={() => setShowDropDown("appliance")}

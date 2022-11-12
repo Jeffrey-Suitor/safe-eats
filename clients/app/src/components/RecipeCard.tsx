@@ -19,54 +19,53 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <View>
-      <Surface key={recipe.id} className="bg-white">
-        <TouchableRipple
-          onPress={() => {
-            setExpanded((prev) => !prev);
-          }}
-        >
-          <View className="p-4">
-            <View className="flex-row justify-between pb-2">
-              <View></View>
-              <Text variant="titleLarge">
-                <MaterialCommunityIcons name={"chef-hat"} size={24} />
-                {` ${recipe.name}`}
-              </Text>
-              <MaterialCommunityIcons
-                name={expanded ? "chevron-up" : "chevron-down"}
-                size={24}
-              />
-            </View>
-            {expanded && (
-              <View className="gap-4 p-4">
-                <RecipeInfo recipe={recipe} containerClassName="flex gap-4" />
-                <View className="flex w-full flex-row justify-around">
-                  <Button
-                    icon="square-edit-outline"
-                    mode="outlined"
-                    onPress={() =>
-                      navigation.push("ModifyRecipe", {
-                        recipe: recipe,
-                        modifyType: "update",
-                      })
-                    }
-                  >
-                    Edit
-                  </Button>
-                  <DeleteRecipeButton
-                    recipe={recipe}
-                    iconSize={24}
-                    iconMode="contained-tonal"
-                    showText={true}
-                  />
-                </View>
-              </View>
-            )}
+    <Surface key={recipe.id} className="mb-4  bg-white">
+      <TouchableRipple
+        onPress={() => {
+          setExpanded((prev) => !prev);
+        }}
+      >
+        <View className="flex justify-between p-4">
+          <View
+            className={`flex-row justify-between ${expanded ? "pb-4" : ""}`}
+          >
+            <Text variant="titleLarge">
+              <MaterialCommunityIcons name={"chef-hat"} size={24} />
+              {` ${recipe.name}`}
+            </Text>
+            <MaterialCommunityIcons
+              name={expanded ? "chevron-up" : "chevron-down"}
+              size={24}
+            />
           </View>
-        </TouchableRipple>
-      </Surface>
-    </View>
+          {expanded && (
+            <View className="gap-y-4 pt-4">
+              <RecipeInfo recipe={recipe} containerClassName="flex gap-4" />
+              <View className="flex w-full flex-row justify-around">
+                <Button
+                  icon="square-edit-outline"
+                  mode="outlined"
+                  onPress={() =>
+                    navigation.push("ModifyRecipe", {
+                      recipe: recipe,
+                      modifyType: "update",
+                    })
+                  }
+                >
+                  Edit
+                </Button>
+                <DeleteRecipeButton
+                  recipe={recipe}
+                  iconSize={24}
+                  iconMode="contained-tonal"
+                  showText={true}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+      </TouchableRipple>
+    </Surface>
   );
 }
 

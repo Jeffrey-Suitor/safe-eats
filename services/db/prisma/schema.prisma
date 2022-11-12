@@ -67,13 +67,14 @@ model Appliance {
 }
 
 model User {
-  id                    String            @id @default(uuid())
-  name                  String
-  email                 String            @unique @db.VarChar(255)
-  role                  Role              @default(USER)
-  appliances            UserToAppliance[]
-  recipes               UserToRecipe[]
-  pushNotificationToken String?
+  id            String            @id @default(uuid())
+  name          String
+  email         String            @unique @db.VarChar(255)
+  role          Role              @default(USER)
+  appliances    UserToAppliance[]
+  recipes       UserToRecipe[]
+  expoPushToken String?
+  password      String?
 }
 
 model UserToAppliance {

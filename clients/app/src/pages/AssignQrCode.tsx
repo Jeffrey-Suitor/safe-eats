@@ -9,9 +9,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RecipeSelectCard from "../components/RecipeSelectCard";
 import { useToast } from "react-native-paper-toast";
 
-type Props = NativeStackScreenProps<RootStackParamList, "AssignQrCode">;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "AssignQrCode"
+>;
 
-function AssignQrCodePage({ navigation, route }: Props) {
+function AssignQrCodePage({ navigation, route }: NavigationProps) {
   const qrCode = route.params.qrCode;
   const toaster = useToast();
   const utils = trpc.useContext();

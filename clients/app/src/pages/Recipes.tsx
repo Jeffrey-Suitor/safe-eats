@@ -7,9 +7,12 @@ import { ActivityIndicator } from "react-native-paper";
 import HomeSpeedDial from "../components/HomeSpeedDial";
 import RecipeCard from "../components/RecipeCard";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Recipes">;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "Recipes"
+>;
 
-function RecipesPage({ navigation }: Props) {
+function RecipesPage({ navigation }: NavigationProps) {
   const [refreshing, setRefreshing] = useState(false);
   const utils = trpc.useContext();
   const { data: recipes, isLoading } = trpc.recipe.all.useQuery();
@@ -32,6 +35,7 @@ function RecipesPage({ navigation }: Props) {
     <SafeAreaView>
       <View className="h-full w-full p-4">
         <FlatList
+          contentContainerStyle={{ justifyContent: "space-between" }}
           className="mb-4"
           onRefresh={() => onRefresh()}
           refreshing={refreshing}

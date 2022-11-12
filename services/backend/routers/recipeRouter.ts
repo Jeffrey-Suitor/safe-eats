@@ -1,7 +1,7 @@
 import { initTRPC } from "@trpc/server";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { router } from "../trpc";
+import { publicProcedure, router } from "../trpc";
 import { RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { prisma } from "@safe-eats/db";
 
@@ -11,23 +11,25 @@ const ee = new EventEmitter();
 const t = initTRPC.create();
 
 export const recipeRouter = router({
-  add: t.procedure.input(RecipeSchema).mutation(async ({ input }) => {
+  add: publicProcedure.input(RecipeSchema).mutation(async ({ input }) => {
     return await prisma.recipe.create({ data: input });
   }),
 
-  all: t.procedure.query(async () => {
+  all: publicProcedure.query(async () => {
     return await prisma.recipe.findMany();
   }),
 
-  get: t.procedure.input(z.string().uuid()).query(async ({ input }) => {
+  get: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.recipe.findUnique({ where: { id: input } });
   }),
 
-  delete: t.procedure.input(z.string().uuid()).mutation(async ({ input }) => {
-    return await prisma.recipe.delete({ where: { id: input } });
-  }),
+  delete: publicProcedure
+    .input(z.string().uuid())
+    .mutation(async ({ input }) => {
+      return await prisma.recipe.delete({ where: { id: input } });
+    }),
 
-  update: t.procedure.input(RecipeSchema).mutation(async ({ input }) => {
+  update: publicProcedure.input(RecipeSchema).mutation(async ({ input }) => {
     return await prisma.recipe.update({ where: { id: input.id }, data: input });
   }),
 });

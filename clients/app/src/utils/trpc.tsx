@@ -44,6 +44,11 @@ import superjson from "superjson";
 // @ts-ignore
 import { connectToDevTools } from "react-devtools-core";
 
+let jwt: string;
+export const setJwt = (newJwt: string) => {
+  jwt = newJwt;
+};
+
 export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
   children,
 }) => {
@@ -62,6 +67,11 @@ export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
           }),
           false: httpLink({
             url: `${getBaseUrl("http")}`,
+            headers() {
+              return {
+                Authorization: jwt,
+              };
+            },
           }),
         }),
       ],

@@ -5,9 +5,12 @@ import { trpc } from "../utils/trpc";
 import React from "react";
 import { View } from "react-native";
 
-type Props = NativeStackScreenProps<RootStackParamList, "ModifyAppliance">;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "ModifyAppliance"
+>;
 
-function ModifyAppliancePage({ navigation, route }: Props) {
+function ModifyAppliancePage({ navigation, route }: NavigationProps) {
   const { data: appliance, isLoading } = trpc.appliance.get.useQuery(
     route.params.applianceId
   );

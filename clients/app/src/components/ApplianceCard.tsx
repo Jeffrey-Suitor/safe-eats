@@ -13,15 +13,6 @@ import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import RecipeInfo from "./RecipeInfo";
 import CircularProgress from "react-native-circular-progress-indicator";
-
-interface ApplianceCardProps {
-  appliance: Appliance;
-  navigation: NativeStackScreenProps<
-    RootStackParamList,
-    "Appliances"
-  >["navigation"];
-  onDelete: () => void;
-}
 interface ApplianceTemperatureDialProps {
   appliance: Appliance;
 }
@@ -84,9 +75,15 @@ function ApplianceTemperatureDial({
   );
 }
 
+interface ApplianceCookingTimeDialProps {
+  appliance: Appliance;
+  currentTime: number;
+}
+
 function ApplianceCookingTimeDial({
   appliance,
-}: ApplianceTemperatureDialProps) {
+  currentTime,
+}: ApplianceCookingTimeDialProps) {
   const { recipe, cookingStartTime } = appliance;
 
   if (recipe === null) {
@@ -94,40 +91,39 @@ function ApplianceCookingTimeDial({
   }
 
   const recipeEndTime = cookingStartTime.getTime() + recipe.cookingTime;
-  const [timeRemaining, setTimeRemaining] = useState(
-    recipeEndTime - Date.now()
-  );
+  const timeRemaining = recipeEndTime - currentTime;
 
-  useEffect(() => {
-    setInterval(() => {
-      setTimeRemaining(recipeEndTime - Date.now());
-    }, 1000);
-  }, []);
-
-  const RemainingTimeDial = useMemo(
-    () => (
-      <CircularProgress
-        value={timeRemaining + 8768712369808}
-        maxValue={recipeEndTime}
-        initialValue={recipeEndTime}
-        inActiveStrokeColor={"#2ecc71"}
-        inActiveStrokeOpacity={0.2}
-        showProgressValue={false}
-        title={new Date(timeRemaining)
-          .toTimeString()
-          .replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1")}
-        subtitle={"Remaining"}
-      />
-    ),
-    [timeRemaining]
+  return (
+    <CircularProgress
+      value={timeRemaining + 8768712369808}
+      maxValue={recipeEndTime}
+      initialValue={recipeEndTime}
+      inActiveStrokeColor={"#2ecc71"}
+      inActiveStrokeOpacity={0.2}
+      showProgressValue={false}
+      title={new Date(timeRemaining)
+        .toTimeString()
+        .replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1")}
+      subtitle={"Remaining"}
+    />
   );
-  return RemainingTimeDial;
+}
+
+interface ApplianceCardProps {
+  appliance: Appliance;
+  navigation: NativeStackScreenProps<
+    RootStackParamList,
+    "Appliances"
+  >["navigation"];
+  onDelete: () => void;
+  currentTime: number;
 }
 
 function ApplianceCard({
   appliance,
   navigation,
   onDelete,
+  currentTime,
 }: ApplianceCardProps) {
   const { recipe, temperatureC, temperatureF, type } = appliance;
   const [applianceExpanded, setApplianceExpanded] = useState(false);
@@ -166,7 +162,10 @@ function ApplianceCard({
 
           <View className="mb-4 flex flex-row justify-evenly">
             <ApplianceTemperatureDial appliance={appliance} />
-            <ApplianceCookingTimeDial appliance={appliance} />
+            <ApplianceCookingTimeDial
+              appliance={appliance}
+              currentTime={currentTime}
+            />
           </View>
 
           {applianceExpanded && (

@@ -35,7 +35,8 @@
     "expo-updates": "~0.14.6",
     "find-up": "^6.3.0",
     "tsx": "^3.11.0",
-    "sentry-expo": "~5.0.0"
+    "sentry-expo": "~5.0.0",
+    "expo-linking": "~3.2.2"
   },
   "packageManager": "npm@8.19.2"
 }

@@ -54,7 +54,51 @@ const seedAppliances = async () => {
       recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
     },
   });
-  console.log("Appliances seeded: ", appliance1, appliance2);
+
+  const appliance3 = await prisma.appliance.create({
+    data: {
+      id: "z3z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
+      name: "Toaster Oven 3",
+      type: "Toaster_Oven",
+      temperatureC: 300,
+      temperatureF: 600,
+      cookingStartTime: new Date().toISOString(),
+      recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
+    },
+  });
+
+  const appliance4 = await prisma.appliance.create({
+    data: {
+      id: "z4z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
+      name: "Toaster Oven 4",
+      type: "Toaster_Oven",
+      temperatureC: 300,
+      temperatureF: 600,
+      cookingStartTime: new Date().toISOString(),
+      recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
+    },
+  });
+
+  const appliance5 = await prisma.appliance.create({
+    data: {
+      id: "z5z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
+      name: "Toaster Oven 5",
+      type: "Toaster_Oven",
+      temperatureC: 300,
+      temperatureF: 600,
+      cookingStartTime: new Date().toISOString(),
+      recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
+    },
+  });
+
+  console.log(
+    "Appliances seeded: ",
+    appliance1,
+    appliance2,
+    appliance3,
+    appliance4,
+    appliance5
+  );
 };
 
 const seedUsers = async () => {
@@ -102,7 +146,28 @@ const seedRecipes = async () => {
       applianceMode: "Bake",
     },
   });
-  console.log("Recipes seeded: ", chickenAlfredo, steak);
+
+  const recipes = [];
+
+  for (let i = 0; i < 10; i++) {
+    recipes.push(i);
+  }
+
+  await prisma.recipe.createMany({
+    data: recipes.map((i) => ({
+      id: `${i}0000000-99d6-432f-96aa-bdd345f320b8`,
+      name: `Spaghetti ${i}`,
+      description: "Always tasty",
+      cookingTime: 1200,
+      expiryDate: 432000,
+      applianceType: "Toaster_Oven" as any,
+      temperature: 200,
+      temperatureUnit: "F" as any,
+      applianceMode: "Bake" as any,
+    })),
+  });
+
+  console.log("Recipes seeded: ", chickenAlfredo, steak, recipes);
 };
 
 const seedUserToApplicance = async () => {
