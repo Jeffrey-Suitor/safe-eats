@@ -1,25 +1,17 @@
 import { createTRPCReact } from "@trpc/react";
-import { createTRPCProxyClient, createWSClient, wsLink } from "@trpc/client";
+import { createWSClient, wsLink } from "@trpc/client";
 import type { AppRouter } from "@safe-eats/server/routers/_app";
 import { splitLink } from "@trpc/client/links/splitLink";
 import { httpLink } from "@trpc/client/links/httpLink";
+import Constants from "expo-constants";
+import React, { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import superjson from "superjson";
+import * as SecureStore from "expo-secure-store";
 
-/**
- * A set of typesafe hooks for consuming your API.
- */
 export const trpc = createTRPCReact<AppRouter>();
 
-/**
- * Extend this function when going to production by
- * setting the baseUrl to your production API URL.
- */
-import Constants from "expo-constants";
 const getBaseUrl = (serverType: "http" | "ws") => {
-  /**
-   * Gets the IP address of your host-machine. If it cannot automatically find it,
-   * you'll have to manually set it. NOTE: Port 3000 should work for most but confirm
-   * you don't have anything else running on it, or you'd have to change it.
-   */
   const localhost = Constants.manifest?.debuggerHost?.split(":")[0];
   if (!localhost)
     throw new Error("failed to get localhost, configure it manually");
@@ -33,27 +25,28 @@ const wsClient = createWSClient({
   url: `${getBaseUrl("ws")}`,
 });
 
-/**
- * A wrapper for your app that provides the TRPC context.
- * Use only in _app.tsx
- */
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import superjson from "superjson";
-// @ts-ignore
-import { connectToDevTools } from "react-devtools-core";
-
 let jwt: string;
-export const setJwt = (newJwt: string) => {
+const jwtKey = "jwt";
+export const setJwt = async (newJwt: string) => {
   jwt = newJwt;
+  SecureStore.setItemAsync(jwtKey, newJwt);
 };
 
 export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
   children,
 }) => {
-  const [queryClient] = React.useState(() => new QueryClient());
-  const [trpcClient] = React.useState(() =>
+  // Get the JWT from secure storage
+  useEffect(() => {
+    SecureStore.getItemAsync(jwtKey).then((jwt) => {
+      if (jwt) {
+        setJwt(jwt);
+      }
+    });
+  }, []);
+
+  useEffect(() => {}, [jwt]);
+  const [queryClient] = useState(() => new QueryClient());
+  const [trpcClient] = useState(() =>
     trpc.createClient({
       transformer: superjson,
       links: [
@@ -69,7 +62,7 @@ export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
             url: `${getBaseUrl("http")}`,
             headers() {
               return {
-                Authorization: jwt,
+                Authorization: `Bearer ${jwt}`,
               };
             },
           }),
@@ -78,15 +71,12 @@ export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
     })
   );
 
-  if (__DEV__) {
-    connectToDevTools({
-      host: "localhost",
-      port: 8097,
-    });
-    import("react-query-native-devtools").then(({ addPlugin }) => {
-      addPlugin({ queryClient });
-    });
-  }
+  // if (__DEV__) {
+  //   connectToDevTools({
+  //     host: "localhost",
+  //     port: 8097,
+  //   });
+  // }
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

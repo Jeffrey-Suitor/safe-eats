@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 import { z } from "zod";
 import { ApplianceSchema } from "@safe-eats/types/applianceTypes";
 import { prisma } from "@safe-eats/db";
-import { router, publicProcedure } from "../trpc";
+import { router, authedProcedure } from "../trpc";
 
 // create a global event emitter (could be replaced by redis, etc)
 const ee = new EventEmitter();
@@ -11,30 +11,49 @@ const ee = new EventEmitter();
 const t = initTRPC.create();
 
 export const applianceRouter = router({
-  add: publicProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
-    return await prisma.appliance.create({ data: input });
-  }),
+  add: authedProcedure
+    .input(ApplianceSchema)
+    .mutation(async ({ input, ctx }) => {
+      const appliance = await prisma.appliance.create({
+        data: {
+          ...input,
+          users: {
+            create: {
+              userId: ctx.user.id,
+            },
+          },
+        },
+      });
+      return appliance;
+    }),
 
-  get: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.appliance.findUnique({
       where: { id: input },
       include: { recipe: true },
     });
   }),
 
-  all: publicProcedure.query(async () => {
+  all: authedProcedure.query(async ({ ctx }) => {
     return await prisma.appliance.findMany({
+      where: {
+        users: {
+          every: {
+            userId: ctx.user.id,
+          },
+        },
+      },
       include: { recipe: true },
     });
   }),
 
-  delete: publicProcedure
+  delete: authedProcedure
     .input(z.string().uuid())
     .mutation(async ({ input }) => {
       return await prisma.appliance.delete({ where: { id: input } });
     }),
 
-  update: publicProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
+  update: authedProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
     return await prisma.appliance.update({
       where: { id: input.id },
       data: input,

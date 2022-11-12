@@ -14,5 +14,5 @@
     },
     "postinstall": {}
   },
-  "globalEnv": ["NODE_ENV", "TOKEN_SECRET"]
+  "globalEnv": ["NODE_ENV", "TOKEN_SECRET", "SENTRY_DSN"]
 }

@@ -2,72 +2,91 @@
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config({ path: "../../.env" });
 import { z } from "zod";
-import { publicProcedure, router, authProcedure } from "../trpc";
-import { UserSchema } from "@safe-eats/types/userTypes";
+import { publicProcedure, router, authedProcedure } from "../trpc";
+import {
+  UserSchema,
+  LoginInfoSchema,
+  SignUpInfoSchema,
+} from "@safe-eats/types/userTypes";
 import { prisma } from "@safe-eats/db";
 import { createAccessToken } from "../jwt";
 import bcrypt from "bcrypt";
+import { Context } from "@sentry/node/types/integrations";
 
 // create a global event emitter (could be replaced by redis, etc)
 export const userRouter = router({
-  googleAuth: publicProcedure.input(z.string()).mutation(async ({ input }) => {
-    const res = await fetch("https://www.googleapis.com/userinfo/v2/me", {
-      headers: {
-        Authorization: `Bearer ${input}`,
-      },
-    });
-    const { id, email, name } = await res.json();
-    const dbUser = await prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    const user =
-      dbUser ??
-      (await prisma.user.create({
-        data: {
-          id,
-          email,
-          name,
+  googleAuth: publicProcedure
+    .input(z.string())
+    .output(z.object({ jwt: z.string(), user: UserSchema }))
+    .mutation(async ({ input }) => {
+      const res = await fetch("https://www.googleapis.com/userinfo/v2/me", {
+        headers: {
+          Authorization: `Bearer ${input}`,
         },
-      }));
-
-    return { jwt: createAccessToken(user), user };
-  }),
-
-  passwordSignUp: publicProcedure
-    .input(
-      z.object({ email: z.string(), password: z.string(), name: z.string() })
-    )
-    .mutation(async ({ input: { email, password, name } }) => {
-      const dbUser = await prisma.user.findUnique({
+      });
+      const { id, email, name } = await res.json();
+      console.log("googleAuth", id, email, name);
+      const user = await prisma.user.upsert({
         where: {
           email,
         },
-      });
-
-      if (dbUser) {
-        throw new Error("User already exists");
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await prisma.user.create({
-        data: {
+        update: {},
+        create: {
+          id,
           email,
-          password: hashedPassword,
           name,
         },
       });
       return { jwt: createAccessToken(user), user };
     }),
 
-  setExpoPushToken: authProcedure
+  passwordSignIn: publicProcedure
+    .input(LoginInfoSchema)
+    .output(z.object({ jwt: z.string(), user: UserSchema }))
+    .mutation(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: input.email,
+        },
+      });
+      if (!user || user.hashedPassword === null) {
+        throw new Error("Invalid credentials");
+      }
+
+      const valid = await bcrypt.compare(input.password, user.hashedPassword);
+      if (!valid) {
+        throw new Error("Invalid credentials");
+      }
+
+      return { jwt: createAccessToken(user), user };
+    }),
+
+  passwordSignUp: publicProcedure
+    .input(SignUpInfoSchema)
+    .output(z.object({ jwt: z.string(), user: UserSchema }))
+    .mutation(async ({ input: { email, password, name } }) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await prisma.user.upsert({
+        where: {
+          email,
+        },
+        update: {},
+        create: {
+          email,
+          hashedPassword,
+          name,
+        },
+      });
+      return { jwt: createAccessToken(user), user };
+    }),
+
+  setExpoPushToken: authedProcedure
     .input(z.string())
-    .mutation(async ({ input }, ctx) => {
+    .output(z.object({ jwt: z.string(), user: UserSchema }))
+    .mutation(async ({ input, ctx }) => {
       const user = await prisma.user.update({
         where: {
-          id: ctx.user.id,
+          id: ctx?.user?.id,
         },
         data: {
           expoPushToken: input,
@@ -76,16 +95,21 @@ export const userRouter = router({
       return { jwt: createAccessToken(user), user };
     }),
 
-  delete: publicProcedure
-    .input(z.string().uuid())
-    .mutation(async ({ input }) => {
-      return await prisma.user.delete({ where: { id: input } });
-    }),
-
-  update: publicProcedure.input(UserSchema).mutation(async ({ input }) => {
-    return await prisma.user.update({ where: { id: input.id }, data: input });
+  delete: authedProcedure.mutation(async ({ ctx }) => {
+    return await prisma.user.delete({ where: { id: ctx.user.id } });
   }),
+
+  update: authedProcedure
+    .input(UserSchema)
+    .output(z.object({ jwt: z.string(), user: UserSchema }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.id !== input.id) {
+        throw new Error("You can only update your own user");
+      }
+      const user = await prisma.user.update({
+        where: { id: input.id },
+        data: input,
+      });
+      return { jwt: createAccessToken(user), user };
+    }),
 });
-function createAccessToken(user: import(".prisma/client").User | null): any {
-  throw new Error("Function not implemented.");
-}

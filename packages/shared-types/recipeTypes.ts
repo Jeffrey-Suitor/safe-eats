@@ -15,7 +15,10 @@ export const RecipeSchema = z.object({
   applianceMode: z.enum(applianceModes),
 });
 
+export const DefinedRecipeSchema = RecipeSchema.extend({ id: z.string() });
+
 export type Recipe = z.infer<typeof RecipeSchema>;
+export type DefinedRecipe = z.infer<typeof DefinedRecipeSchema>;
 
 export const defaultRecipe: Recipe = {
   name: "",

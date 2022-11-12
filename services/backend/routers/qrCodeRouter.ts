@@ -2,7 +2,7 @@ import { initTRPC } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { authedProcedure, router } from "../trpc";
 import { qrCodeSchema } from "@safe-eats/types/qrCodeTypes";
 import { prisma } from "@safe-eats/db";
 
@@ -12,25 +12,25 @@ const ee = new EventEmitter();
 const t = initTRPC.create();
 
 export const qrCodeRouter = router({
-  add: publicProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
+  add: authedProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
     return await prisma.qRCode.create({ data: input });
   }),
 
-  get: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.qRCode.findUnique({ where: { id: input } });
   }),
 
-  delete: publicProcedure
+  delete: authedProcedure
     .input(z.string().uuid())
     .mutation(async ({ input }) => {
       return await prisma.qRCode.delete({ where: { id: input } });
     }),
 
-  update: publicProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
+  update: authedProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
     return await prisma.qRCode.update({ where: { id: input.id }, data: input });
   }),
 
-  getRecipe: publicProcedure
+  getRecipe: authedProcedure
     .input(z.string().uuid())
     .query(async ({ input }) => {
       return await prisma.qRCode.findUnique({ where: { id: input } }).recipe();

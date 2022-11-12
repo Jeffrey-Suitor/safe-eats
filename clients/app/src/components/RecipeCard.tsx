@@ -1,12 +1,13 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Recipe } from "@safe-eats/types/recipeTypes";
-import { View } from "react-native";
-import { Text, Button, Surface, TouchableRipple } from "react-native-paper";
+import { View, Text } from "react-native";
+import { Button, TouchableRipple } from "react-native-paper";
 import { RootStackParamList } from "../_app";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import DeleteRecipeButton from "./DeleteRecipeButton";
 import RecipeInfo from "./RecipeInfo";
+
 interface RecipeCardProps {
   recipe: Recipe;
   navigation: NativeStackScreenProps<
@@ -19,7 +20,7 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Surface key={recipe.id} className="mb-4  bg-white">
+    <View key={recipe.id} className="mb-4 rounded-xl bg-white shadow-lg">
       <TouchableRipple
         onPress={() => {
           setExpanded((prev) => !prev);
@@ -29,7 +30,7 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
           <View
             className={`flex-row justify-between ${expanded ? "pb-4" : ""}`}
           >
-            <Text variant="titleLarge">
+            <Text className="text-xl">
               <MaterialCommunityIcons name={"chef-hat"} size={24} />
               {` ${recipe.name}`}
             </Text>
@@ -65,7 +66,7 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
           )}
         </View>
       </TouchableRipple>
-    </Surface>
+    </View>
   );
 }
 

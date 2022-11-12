@@ -29,7 +29,7 @@ import * as Sentry from "sentry-expo";
 import PushNotificationWrapper from "./components/PushNotificationsWrapper";
 import * as WebBrowser from "expo-web-browser";
 import LoginPage from "./pages/Login";
-import { AuthProvider } from "./components/AuthContext";
+import { AuthProvider, useAuth } from "./components/AuthContext";
 
 type ModifyType = "add" | "update";
 type ScanType = "qr-code" | "appliance";
@@ -45,7 +45,84 @@ export type RootStackParamList = {
   AssignQrCode: { qrCode: string };
 };
 
-WebBrowser.maybeCompleteAuthSession();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
+
+function HomePage() {
+  return (
+    <Tab.Navigator initialRouteName="Appliances">
+      <Tab.Screen
+        name="Appliances"
+        component={AppliancesPage}
+        options={{
+          tabBarIcon: ({ color }: { color: string }) => (
+            <MaterialCommunityIcons
+              name="toaster-oven"
+              color={color}
+              size={26}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Recipes"
+        component={RecipesPage}
+        options={{
+          tabBarIcon: ({ color }: { color: string }) => (
+            <MaterialCommunityIcons name="chef-hat" color={color} size={26} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+function Navigator() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={LoginPage} />
+      </Stack.Navigator>
+    );
+  }
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Home" component={HomePage} />
+      <Stack.Screen
+        name="Scan"
+        component={ScanPage}
+        options={({ route }) => ({
+          title: `Scan ${
+            route.params.scanType === "qr-code" ? "QR Code" : "Appliance"
+          }`,
+        })}
+      />
+      <Stack.Screen
+        name="ModifyRecipe"
+        component={ModifyRecipePage}
+        options={({ route }) => ({
+          title: `${capitalize(route.params.modifyType)} Recipe`,
+        })}
+      />
+      <Stack.Screen
+        name="ModifyAppliance"
+        component={ModifyAppliancePage}
+        options={({ route }) => ({
+          title: `${capitalize(route.params.modifyType)} Appliance`,
+        })}
+      />
+      <Stack.Screen
+        name="AssignQrCode"
+        component={AssignQrCodePage}
+        options={() => ({
+          title: "Assign QR Code",
+        })}
+      />
+    </Stack.Navigator>
+  );
+}
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
   light: NavigationDefaultTheme,
@@ -79,52 +156,6 @@ Sentry.init({
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
-
-const HomePage = () => {
-  return (
-    <Tab.Navigator initialRouteName="Login">
-      <Tab.Screen
-        name="Login"
-        component={LoginPage}
-        options={{
-          tabBarIcon: ({ color }: { color: string }) => (
-            <MaterialCommunityIcons
-              name="toaster-oven"
-              color={color}
-              size={26}
-            />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Appliances"
-        component={AppliancesPage}
-        options={{
-          tabBarIcon: ({ color }: { color: string }) => (
-            <MaterialCommunityIcons
-              name="toaster-oven"
-              color={color}
-              size={26}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Recipes"
-        component={RecipesPage}
-        options={{
-          tabBarIcon: ({ color }: { color: string }) => (
-            <MaterialCommunityIcons name="chef-hat" color={color} size={26} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
-
 const App = () => {
   React.useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -139,51 +170,13 @@ const App = () => {
         <PaperProvider theme={CombinedDefaultTheme}>
           <ToastProvider>
             <ModalProvider>
-              <AuthProvider>
-                <PushNotificationWrapper>
-                  <NavigationContainer theme={CombinedDefaultTheme}>
-                    <Stack.Navigator>
-                      <Stack.Screen name="Home" component={HomePage} />
-                      <Stack.Screen
-                        name="Scan"
-                        component={ScanPage}
-                        options={({ route }) => ({
-                          title: `Scan ${
-                            route.params.scanType === "qr-code"
-                              ? "QR Code"
-                              : "Appliance"
-                          }`,
-                        })}
-                      />
-                      <Stack.Screen
-                        name="ModifyRecipe"
-                        component={ModifyRecipePage}
-                        options={({ route }) => ({
-                          title: `${capitalize(
-                            route.params.modifyType
-                          )} Recipe`,
-                        })}
-                      />
-                      <Stack.Screen
-                        name="ModifyAppliance"
-                        component={ModifyAppliancePage}
-                        options={({ route }) => ({
-                          title: `${capitalize(
-                            route.params.modifyType
-                          )} Appliance`,
-                        })}
-                      />
-                      <Stack.Screen
-                        name="AssignQrCode"
-                        component={AssignQrCodePage}
-                        options={() => ({
-                          title: "Assign QR Code",
-                        })}
-                      />
-                    </Stack.Navigator>
-                  </NavigationContainer>
-                </PushNotificationWrapper>
-              </AuthProvider>
+              <NavigationContainer theme={CombinedDefaultTheme}>
+                <AuthProvider>
+                  <PushNotificationWrapper>
+                    <Navigator />
+                  </PushNotificationWrapper>
+                </AuthProvider>
+              </NavigationContainer>
             </ModalProvider>
           </ToastProvider>
         </PaperProvider>

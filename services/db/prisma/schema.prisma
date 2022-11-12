@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
+  previewFeatures = ["referentialIntegrity", "tracing"]
 }
 
 datasource db {
@@ -43,7 +43,7 @@ model Recipe {
   applianceMode   ApplianceMode
   qrCodes         QRCode[]
   appliance       Appliance[]
-  user            UserToRecipe[]
+  users           UserToRecipe[]
 }
 
 model QRCode {
@@ -67,14 +67,14 @@ model Appliance {
 }
 
 model User {
-  id            String            @id @default(uuid())
-  name          String
-  email         String            @unique @db.VarChar(255)
-  role          Role              @default(USER)
-  appliances    UserToAppliance[]
-  recipes       UserToRecipe[]
-  expoPushToken String?
-  password      String?
+  id             String            @id @default(uuid())
+  name           String
+  email          String            @unique @db.VarChar(255)
+  role           Role              @default(USER)
+  appliances     UserToAppliance[]
+  recipes        UserToRecipe[]
+  expoPushToken  String?
+  hashedPassword String?
 }
 
 model UserToAppliance {

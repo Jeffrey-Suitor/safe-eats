@@ -7,7 +7,7 @@ export const createAccessToken = (user: User) => {
   if (!process.env.TOKEN_SECRET) {
     throw new Error("TOKEN_SECRET not set");
   }
-  return jwt.sign(JSON.stringify(user), process.env.TOKEN_SECRET, {
+  return jwt.sign(user, process.env.TOKEN_SECRET, {
     expiresIn: "1h",
   });
 };

@@ -3,6 +3,8 @@ import * as trpcNext from "@trpc/server/adapters/next";
 import { NodeHTTPCreateContextFnOptions } from "@trpc/server/adapters/node-http";
 import { IncomingMessage } from "http";
 import ws from "ws";
+import { decryptAccessToken } from "./jwt";
+import { UserSchema } from "@safe-eats/types/userTypes";
 
 /**
  * Creates context for an incoming request
@@ -13,14 +15,17 @@ export const createContext = async (
     | trpcNext.CreateNextContextOptions
     | NodeHTTPCreateContextFnOptions<IncomingMessage, ws>
 ) => {
-  console.log(opts);
-  const session = {};
-
-  console.log("createContext for", session?.user?.name ?? "unknown user");
-
-  return {
-    session,
-  };
+  try {
+    const jwt = opts?.req?.headers?.authorization?.split(" ")[1];
+    const userJwt = decryptAccessToken(jwt);
+    const user = UserSchema.parse(userJwt);
+    return {
+      user,
+    };
+  } catch (e) {
+    console.log("Failed to create context");
+    return {};
+  }
 };
 
 export type Context = trpc.inferAsyncReturnType<typeof createContext>;

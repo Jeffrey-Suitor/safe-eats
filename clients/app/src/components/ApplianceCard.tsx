@@ -1,13 +1,7 @@
 import { View } from "react-native";
-import {
-  Surface,
-  Text,
-  TouchableRipple,
-  Button,
-  IconButton,
-} from "react-native-paper";
+import { Text, TouchableRipple, Button, IconButton } from "react-native-paper";
 import type { Appliance } from "@safe-eats/types/applianceTypes";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -141,7 +135,7 @@ function ApplianceCard({
   ];
 
   return (
-    <Surface className="mb-4 bg-white">
+    <View key={appliance.id} className="mb-4 rounded-xl bg-white shadow-lg">
       <TouchableRipple
         onPress={() => {
           setApplianceExpanded((prev) => !prev);
@@ -229,7 +223,7 @@ function ApplianceCard({
           )}
         </View>
       </TouchableRipple>
-    </Surface>
+    </View>
   );
 }
 

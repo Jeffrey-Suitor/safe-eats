@@ -1,7 +1,7 @@
 import { initTRPC } from "@trpc/server";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { authedProcedure, router } from "../trpc";
 import { RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { prisma } from "@safe-eats/db";
 
@@ -11,25 +11,52 @@ const ee = new EventEmitter();
 const t = initTRPC.create();
 
 export const recipeRouter = router({
-  add: publicProcedure.input(RecipeSchema).mutation(async ({ input }) => {
-    return await prisma.recipe.create({ data: input });
+  add: authedProcedure.input(RecipeSchema).mutation(async ({ input, ctx }) => {
+    const recipe = await prisma.recipe.create({
+      data: {
+        ...input,
+        users: {
+          create: { userId: ctx.user.id },
+        },
+      },
+    });
+    return recipe;
   }),
 
-  all: publicProcedure.query(async () => {
-    return await prisma.recipe.findMany();
+  all: authedProcedure.query(async ({ ctx }) => {
+    return await prisma.recipe.findMany({
+      where: {
+        users: {
+          every: {
+            userId: ctx.user.id,
+          },
+        },
+      },
+    });
   }),
 
-  get: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
-    return await prisma.recipe.findUnique({ where: { id: input } });
+  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+    return await prisma.recipe.findUniqueOrThrow({
+      where: {
+        id: input,
+      },
+    });
   }),
 
-  delete: publicProcedure
+  delete: authedProcedure
     .input(z.string().uuid())
     .mutation(async ({ input }) => {
-      return await prisma.recipe.delete({ where: { id: input } });
+      return await prisma.recipe.delete({
+        where: {
+          id: input,
+        },
+      });
     }),
 
-  update: publicProcedure.input(RecipeSchema).mutation(async ({ input }) => {
-    return await prisma.recipe.update({ where: { id: input.id }, data: input });
+  update: authedProcedure.input(RecipeSchema).mutation(async ({ input }) => {
+    return await prisma.recipe.update({
+      where: { id: input.id },
+      data: input,
+    });
   }),
 });

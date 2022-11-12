@@ -16,7 +16,7 @@ Notifications.setNotificationHandler({
 function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
-  const { setUser } = useAuth();
+  const { setUser, user } = useAuth();
 
   const { mutate: updatePushToken } = trpc.user.setExpoPushToken.useMutation({
     onSuccess: ({ user, jwt }) => {
@@ -27,8 +27,10 @@ function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    if (user === null || user.expoPushToken) return;
     registerForPushNotificationsAsync().then((token) => {
       console.log(token);
+      if (token === undefined) return;
       updatePushToken(token);
     });
 
@@ -50,7 +52,7 @@ function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
       );
       Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, []);
+  }, [user]);
 
   return <>{children}</>;
 }

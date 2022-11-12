@@ -12,6 +12,7 @@ import { trpc } from "../utils/trpc";
 import { User } from "@safe-eats/types/userTypes";
 import { useNavigation } from "@react-navigation/native";
 import { setJwt } from "../utils/trpc";
+import { LoginInfo, SignUpInfo } from "@safe-eats/types/userTypes";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -19,7 +20,9 @@ interface AuthContextInterface {
   user: User | null;
   googleSignIn: () => void;
   isAuthenticating: boolean;
-  setUser: () => Dispatch<SetStateAction<User>>;
+  setUser: Dispatch<SetStateAction<User | null>>;
+  passwordSignIn: (login: LoginInfo) => void;
+  passwordSignUp: (signup: SignUpInfo) => void;
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -27,6 +30,8 @@ const AuthContext = createContext<AuthContextInterface>({
   googleSignIn: () => {},
   isAuthenticating: false,
   setUser: () => {},
+  passwordSignIn: (login: LoginInfo) => {},
+  passwordSignUp: (signup: SignUpInfo) => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -54,13 +59,43 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     expoClientId:
       "600679286779-fppu5b515elfvaruo945urr4lf4q58ev.apps.googleusercontent.com",
   });
-
   useEffect(() => {
     if (googleResponse?.type === "success") {
       const { access_token } = googleResponse.params;
       googleAuth(access_token);
     }
   }, [googleResponse]);
+
+  const { mutate: passwordSignInMut } = trpc.user.passwordSignIn.useMutation({
+    onMutate: () => {
+      setIsAuthenticating(true);
+    },
+    onSuccess: ({ jwt, user }) => {
+      setUser(user);
+      setJwt(jwt);
+      navigation.navigate("Appliances");
+    },
+    onSettled: () => {
+      setIsAuthenticating(false);
+    },
+  });
+
+  const { mutate: passwordSignUpMut } = trpc.user.passwordSignUp.useMutation({
+    onMutate: () => {
+      setIsAuthenticating(true);
+    },
+    onSuccess: ({ jwt, user }) => {
+      setUser(user);
+      setJwt(jwt);
+      navigation.navigate("Appliances");
+    },
+    onSettled: () => {
+      setIsAuthenticating(false);
+    },
+  });
+
+  const passwordSignIn = (l: LoginInfo) => passwordSignInMut(l);
+  const passwordSignUp = (s: SignUpInfo) => passwordSignUpMut(s);
 
   return (
     <AuthContext.Provider
@@ -69,6 +104,8 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
         googleSignIn: googlePromptAsync,
         isAuthenticating,
         setUser,
+        passwordSignIn,
+        passwordSignUp,
       }}
     >
       {children}

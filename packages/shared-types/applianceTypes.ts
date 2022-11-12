@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RecipeSchema } from "./recipeTypes";
+import { DefinedRecipeSchema } from "./recipeTypes";
 import { applianceTypes } from "./applianceConstants";
 
 export const ApplianceSchema = z.object({
@@ -10,7 +10,7 @@ export const ApplianceSchema = z.object({
   temperatureF: z.number(),
   cookingStartTime: z.date(),
   recipeId: z.string().uuid().nullable(),
-  recipe: RecipeSchema.nullable(),
+  recipe: DefinedRecipeSchema.nullable(),
 });
 
 export type Appliance = z.infer<typeof ApplianceSchema>;
