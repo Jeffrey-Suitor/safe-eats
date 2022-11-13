@@ -5,18 +5,15 @@ import { authedProcedure, router } from "../trpc";
 import { RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { prisma } from "@safe-eats/db";
 
-// create a global event emitter (could be replaced by redis, etc)
-const ee = new EventEmitter();
-
-const t = initTRPC.create();
-
 export const recipeRouter = router({
   add: authedProcedure.input(RecipeSchema).mutation(async ({ input, ctx }) => {
     const recipe = await prisma.recipe.create({
       data: {
         ...input,
         users: {
-          create: { userId: ctx.user.id },
+          connect: {
+            id: ctx.user.id,
+          },
         },
       },
     });
@@ -27,15 +24,15 @@ export const recipeRouter = router({
     return await prisma.recipe.findMany({
       where: {
         users: {
-          every: {
-            userId: ctx.user.id,
+          some: {
+            id: ctx.user.id,
           },
         },
       },
     });
   }),
 
-  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  byId: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.recipe.findUniqueOrThrow({
       where: {
         id: input,

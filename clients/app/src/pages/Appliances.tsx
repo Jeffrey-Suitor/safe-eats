@@ -19,7 +19,6 @@ function AppliancesPage({ navigation }: NavigationProps) {
   const utils = trpc.useContext();
   const toaster = useToast();
   const { data: appliances, isLoading } = trpc.appliance.all.useQuery();
-  utils.recipe.all.prefetch();
 
   const { mutate: deleteAppliance } = trpc.appliance.delete.useMutation({
     async onSuccess() {
@@ -40,13 +39,9 @@ function AppliancesPage({ navigation }: NavigationProps) {
     null
   );
   const { setModalVisible, setModalContent } = useModal();
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-    return () => clearInterval(interval);
+    utils.recipe.all.prefetch();
   }, []);
 
   useEffect(() => {
@@ -104,13 +99,12 @@ function AppliancesPage({ navigation }: NavigationProps) {
           data={appliances}
           renderItem={({ item: appliance }) => (
             <ApplianceCard
-              appliance={appliance}
+              applianceId={appliance.id}
               navigation={navigation}
               onDelete={() => {
                 setCurrentAppliance(appliance);
                 setModalVisible(true);
               }}
-              currentTime={currentTime}
             />
           )}
         />

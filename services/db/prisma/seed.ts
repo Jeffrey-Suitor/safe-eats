@@ -1,9 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../index";
 
 async function main() {
-  await prisma.userToAppliance.deleteMany();
-  await prisma.userToRecipe.deleteMany();
   await prisma.qRCode.deleteMany();
   await prisma.recipe.deleteMany();
   await prisma.user.deleteMany();
@@ -12,8 +9,6 @@ async function main() {
   await seedAppliances();
   await seedRecipes();
   await seedQrCodes();
-  await seedUserToApplicance();
-  await seedUserToRecipe();
 }
 const seedQrCodes = async () => {
   const qrCode1 = await prisma.qRCode.create({
@@ -34,12 +29,17 @@ const seedQrCodes = async () => {
 const seedAppliances = async () => {
   const appliance1 = await prisma.appliance.create({
     data: {
-      id: "a1b2c3d4-e5f6-7g8h-9i0j-1k2l3m4n5o6p",
+      id: "e689efaa-59d6-48cf-88f9-fbd346e60e76",
       name: "Toaster Oven",
       type: "Toaster_Oven",
       temperatureC: 200,
       temperatureF: 400,
       cookingStartTime: new Date().toISOString(),
+      users: {
+        connect: {
+          id: "f62bc609-63d2-47dd-af75-e425d8e82c0a",
+        },
+      },
     },
   });
 
@@ -105,7 +105,7 @@ const seedUsers = async () => {
   const user1 = await prisma.user.create({
     data: {
       id: "f62bc609-63d2-47dd-af75-e425d8e82c0a",
-      email: "jeff@gmail.com",
+      email: "jeffreysuitor117@gmail.com",
       name: "jeff",
     },
   });
@@ -167,27 +167,24 @@ const seedRecipes = async () => {
     })),
   });
 
+  await Promise.all(
+    recipes.map((i) =>
+      prisma.recipe.update({
+        where: {
+          id: `${i}0000000-99d6-432f-96aa-bdd345f320b8`,
+        },
+        data: {
+          users: {
+            connect: {
+              id: "f62bc609-63d2-47dd-af75-e425d8e82c0a",
+            },
+          },
+        },
+      })
+    )
+  );
+
   console.log("Recipes seeded: ", chickenAlfredo, steak, recipes);
-};
-
-const seedUserToApplicance = async () => {
-  const userToAppliance = await prisma.userToAppliance.create({
-    data: {
-      userId: "f62bc609-63d2-47dd-af75-e425d8e82c0a",
-      applianceId: "a1b2c3d4-e5f6-7g8h-9i0j-1k2l3m4n5o6p",
-    },
-  });
-  console.log("User to appliance seeded: ", userToAppliance);
-};
-
-const seedUserToRecipe = async () => {
-  const userToRecipe = await prisma.userToRecipe.create({
-    data: {
-      userId: "f62bc609-63d2-47dd-af75-e425d8e82c0a",
-      recipeId: "a62aa609-63d2-47dd-af75-e425d8e82c0a",
-    },
-  });
-  console.log("User to recipe seeded: ", userToRecipe);
 };
 
 main()

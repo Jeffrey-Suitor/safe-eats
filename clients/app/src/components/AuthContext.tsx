@@ -13,6 +13,7 @@ import { User } from "@safe-eats/types/userTypes";
 import { useNavigation } from "@react-navigation/native";
 import { setJwt } from "../utils/trpc";
 import { LoginInfo, SignUpInfo } from "@safe-eats/types/userTypes";
+import * as SecureStore from "expo-secure-store";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -42,14 +43,25 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
   const [user, setUser] = useState<null | User>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  // Get the JWT from secure storage
+  useEffect(() => {
+    if (!process.env.JWT_KEY) {
+      throw new Error("JWT_KEY not set");
+    }
+    SecureStore.getItemAsync(process.env.JWT_KEY).then((jwt) => {
+      if (jwt) {
+        setJwt(jwt);
+      }
+    });
+  }, []);
+
   const { mutate: googleAuth } = trpc.user.googleAuth.useMutation({
     onMutate: () => {
       setIsAuthenticating(true);
     },
     onSuccess: ({ jwt, user }) => {
-      setUser(user);
       setJwt(jwt);
-      navigation.navigate("Appliances");
+      setUser(user);
     },
     onSettled: () => {
       setIsAuthenticating(false);

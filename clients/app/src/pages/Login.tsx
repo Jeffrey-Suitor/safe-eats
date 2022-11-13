@@ -98,7 +98,7 @@ function LoginPage() {
 
         <Button
           disabled={isAuthenticating}
-          title="Login"
+          title={screenType === "login" ? "Login" : "Sign Up"}
           onPress={() => {
             if (!formComplete) {
               setShowErrors(true);
@@ -113,7 +113,9 @@ function LoginPage() {
 
       <Button
         disabled={isAuthenticating}
-        title="Login"
+        title={
+          screenType === "login" ? "Login with Google" : "Sign up with Google"
+        }
         onPress={() => {
           googleSignIn();
         }}

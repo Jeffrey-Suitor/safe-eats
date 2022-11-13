@@ -1,5 +1,5 @@
 import { SafeAreaView, View, FlatList } from "react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";

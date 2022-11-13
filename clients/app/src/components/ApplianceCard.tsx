@@ -1,12 +1,20 @@
 import { View } from "react-native";
-import { Text, TouchableRipple, Button, IconButton } from "react-native-paper";
-import type { Appliance } from "@safe-eats/types/applianceTypes";
-import { useState } from "react";
+import {
+  Text,
+  TouchableRipple,
+  Button,
+  IconButton,
+  ActivityIndicator,
+} from "react-native-paper";
+import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import RecipeInfo from "./RecipeInfo";
 import CircularProgress from "react-native-circular-progress-indicator";
+import { trpc } from "../utils/trpc";
+import { Recipe } from "@safe-eats/types/recipeTypes";
+import { Appliance } from "@safe-eats/types/applianceTypes";
 interface ApplianceTemperatureDialProps {
   appliance: Appliance;
 }
@@ -14,14 +22,23 @@ interface ApplianceTemperatureDialProps {
 function ApplianceTemperatureDial({
   appliance,
 }: ApplianceTemperatureDialProps) {
-  const { recipe } = appliance;
-  const applianceTemperatureUnit = recipe?.temperatureUnit === "C" ? "C" : "F";
+  const { temperatureC, temperatureF, id, recipe } = appliance;
+  const [temp, setTemp] = useState({ temperatureF, temperatureC });
+
+  const utils = trpc.useContext();
+  trpc.appliance.onTemperatureUpdate.useSubscription(id, {
+    onData: (temperatures) => {
+      utils.appliance.byId.setData({ ...appliance, ...temperatures });
+      setTemp(temperatures);
+    },
+    onError(err) {
+      console.error("Subscription error:", err);
+    },
+  });
+
+  const { temperature: recipeTemperature, temperatureUnit } = recipe || {};
   const applianceTemperature =
-    recipe?.temperatureUnit === "C"
-      ? appliance.temperatureC
-      : appliance.temperatureF;
-  const recipeTemperature =
-    recipe?.temperatureUnit === "C" ? recipe?.temperature : recipe?.temperature;
+    temperatureUnit === "C" ? temp.temperatureC : temp.temperatureF;
 
   const strokeColorConfig =
     recipeTemperature === undefined
@@ -58,9 +75,7 @@ function ApplianceTemperatureDial({
         recipeTemperature ? recipeTemperature + 30 : applianceTemperature
       }
       title={
-        recipe == null
-          ? undefined
-          : `/${recipeTemperature}°${applianceTemperatureUnit}`
+        recipe == null ? undefined : `/${recipeTemperature}°${temperatureUnit}`
       }
       strokeColorConfig={strokeColorConfig}
       titleColor="#000000"
@@ -70,15 +85,35 @@ function ApplianceTemperatureDial({
 }
 
 interface ApplianceCookingTimeDialProps {
-  appliance: Appliance;
-  currentTime: number;
+  recipe: Recipe | null;
+  cookingStartTime: Date;
 }
 
 function ApplianceCookingTimeDial({
-  appliance,
-  currentTime,
+  recipe,
+  cookingStartTime,
 }: ApplianceCookingTimeDialProps) {
-  const { recipe, cookingStartTime } = appliance;
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  const { mutate } = trpc.appliance.updateTemperature.useMutation();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      mutate({
+        id: "e689efaa-59d6-48cf-88f9-fbd346e60e76",
+        temperatureC: Math.floor(Math.random() * 100),
+        temperatureF: Math.floor(Math.random() * 100),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (recipe === null) {
     return null;
@@ -104,24 +139,42 @@ function ApplianceCookingTimeDial({
 }
 
 interface ApplianceCardProps {
-  appliance: Appliance;
+  applianceId: string;
   navigation: NativeStackScreenProps<
     RootStackParamList,
     "Appliances"
   >["navigation"];
   onDelete: () => void;
-  currentTime: number;
 }
 
 function ApplianceCard({
-  appliance,
+  applianceId,
   navigation,
   onDelete,
-  currentTime,
 }: ApplianceCardProps) {
-  const { recipe, temperatureC, temperatureF, type } = appliance;
+  const { data: appliance, isLoading } =
+    trpc.appliance.byId.useQuery(applianceId);
+
   const [applianceExpanded, setApplianceExpanded] = useState(false);
   const [recipeExpanded, setRecipeExpanded] = useState(false);
+
+  if (isLoading || !appliance) {
+    return (
+      <View className="flex h-full items-center justify-center">
+        <ActivityIndicator animating={true} size="large" />
+      </View>
+    );
+  }
+
+  const {
+    type,
+    temperatureC,
+    temperatureF,
+    cookingStartTime,
+    recipe,
+    id,
+    name,
+  } = appliance;
 
   const applianceInfoMap = [
     {
@@ -135,7 +188,7 @@ function ApplianceCard({
   ];
 
   return (
-    <View key={appliance.id} className="mb-4 rounded-xl bg-white shadow-lg">
+    <View key={id} className="mb-4 rounded-xl bg-white shadow-lg">
       <TouchableRipple
         onPress={() => {
           setApplianceExpanded((prev) => !prev);
@@ -146,7 +199,7 @@ function ApplianceCard({
             <View></View>
             <Text variant="titleLarge" className="text-primary">
               <MaterialCommunityIcons name={"toaster-oven"} size={24} />
-              {` ${appliance.name}`}
+              {` ${name}`}
             </Text>
             <MaterialCommunityIcons
               name={applianceExpanded ? "chevron-up" : "chevron-down"}
@@ -157,8 +210,8 @@ function ApplianceCard({
           <View className="mb-4 flex flex-row justify-evenly">
             <ApplianceTemperatureDial appliance={appliance} />
             <ApplianceCookingTimeDial
-              appliance={appliance}
-              currentTime={currentTime}
+              recipe={recipe}
+              cookingStartTime={cookingStartTime}
             />
           </View>
 
@@ -204,7 +257,7 @@ function ApplianceCard({
                   mode="outlined"
                   onPress={() =>
                     navigation.push("ModifyAppliance", {
-                      applianceId: appliance.id,
+                      applianceId: id,
                       modifyType: "update",
                     })
                   }

@@ -43,7 +43,7 @@ model Recipe {
   applianceMode   ApplianceMode
   qrCodes         QRCode[]
   appliance       Appliance[]
-  users           UserToRecipe[]
+  users           User[]
 }
 
 model QRCode {
@@ -54,43 +54,25 @@ model QRCode {
 }
 
 model Appliance {
-  id               String            @id
+  id               String        @id
   name             String
   type             ApplianceType
-  updatedAt        DateTime          @updatedAt
+  updatedAt        DateTime      @updatedAt
   temperatureC     Int
   temperatureF     Int
   cookingStartTime DateTime
-  recipe           Recipe?           @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  recipe           Recipe?       @relation(fields: [recipeId], references: [id], onDelete: SetNull)
   recipeId         String?
-  users            UserToAppliance[]
+  users            User[]
 }
 
 model User {
-  id             String            @id @default(uuid())
+  id             String      @id @default(uuid())
   name           String
-  email          String            @unique @db.VarChar(255)
-  role           Role              @default(USER)
-  appliances     UserToAppliance[]
-  recipes        UserToRecipe[]
+  email          String      @unique @db.VarChar(255)
+  role           Role        @default(USER)
+  appliances     Appliance[]
+  recipes        Recipe[]
   expoPushToken  String?
   hashedPassword String?
-}
-
-model UserToAppliance {
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String
-  appliance   Appliance @relation(fields: [applianceId], references: [id])
-  applianceId String
-
-  @@id([userId, applianceId])
-}
-
-model UserToRecipe {
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   String
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId String
-
-  @@id([userId, recipeId])
 }

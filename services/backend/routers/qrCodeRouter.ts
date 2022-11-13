@@ -16,7 +16,7 @@ export const qrCodeRouter = router({
     return await prisma.qRCode.create({ data: input });
   }),
 
-  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  byId: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.qRCode.findUnique({ where: { id: input } });
   }),
 

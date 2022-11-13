@@ -29,7 +29,6 @@ function PushNotificationWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user === null || user.expoPushToken) return;
     registerForPushNotificationsAsync().then((token) => {
-      console.log(token);
       if (token === undefined) return;
       updatePushToken(token);
     });

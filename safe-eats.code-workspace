@@ -1,0 +1,11 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "clients/esp32-main"
+	}
+],
+  "settings": {}
+}

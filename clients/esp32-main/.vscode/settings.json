@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.excalidraw": "json",
+    "*.excalidrawlib": "json",
+    "uart.h": "c"
+  }
+}

@@ -1,5 +1,5 @@
 import { createTRPCReact } from "@trpc/react";
-import { createWSClient, wsLink } from "@trpc/client";
+import { createWSClient, loggerLink, wsLink } from "@trpc/client";
 import type { AppRouter } from "@safe-eats/server/routers/_app";
 import { splitLink } from "@trpc/client/links/splitLink";
 import { httpLink } from "@trpc/client/links/httpLink";
@@ -26,30 +26,28 @@ const wsClient = createWSClient({
 });
 
 let jwt: string;
-const jwtKey = "jwt";
 export const setJwt = async (newJwt: string) => {
   jwt = newJwt;
-  SecureStore.setItemAsync(jwtKey, newJwt);
+  if (!process.env.JWT_KEY) {
+    throw new Error("JWT_KEY not set");
+  }
+  SecureStore.setItemAsync(process.env.JWT_KEY, newJwt);
 };
 
 export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
   children,
 }) => {
-  // Get the JWT from secure storage
-  useEffect(() => {
-    SecureStore.getItemAsync(jwtKey).then((jwt) => {
-      if (jwt) {
-        setJwt(jwt);
-      }
-    });
-  }, []);
-
-  useEffect(() => {}, [jwt]);
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
     trpc.createClient({
       transformer: superjson,
       links: [
+        loggerLink({
+          enabled: (opts) =>
+            (process.env.NODE_ENV === "development" &&
+              typeof window !== "undefined") ||
+            (opts.direction === "down" && opts.result instanceof Error),
+        }),
         // call subscriptions through websockets and the rest over http
         splitLink({
           condition(op) {

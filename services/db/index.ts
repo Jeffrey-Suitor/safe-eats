@@ -1,7 +1,6 @@
-import { findUpSync } from "find-up";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 // eslint-disable-next-line turbo/no-undeclared-env-vars
-dotenv.config({ path: findUpSync(process.env.ENV_FILE || ".env") });
+dotenv.config({ path: "../../.env" });
 import { PrismaClient } from "@prisma/client";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
@@ -16,7 +15,7 @@ export const prisma =
   new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
+        ? ["query", "info", "warn", "error"]
         : ["error"],
   });
 

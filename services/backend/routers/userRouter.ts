@@ -11,7 +11,6 @@ import {
 import { prisma } from "@safe-eats/db";
 import { createAccessToken } from "../jwt";
 import bcrypt from "bcrypt";
-import { Context } from "@sentry/node/types/integrations";
 
 // create a global event emitter (could be replaced by redis, etc)
 export const userRouter = router({
@@ -24,19 +23,18 @@ export const userRouter = router({
           Authorization: `Bearer ${input}`,
         },
       });
-      const { id, email, name } = await res.json();
-      console.log("googleAuth", id, email, name);
-      const user = await prisma.user.upsert({
+      const { email, name } = await res.json();
+      const dbUser = await prisma.user.upsert({
         where: {
           email,
         },
         update: {},
         create: {
-          id,
           email,
           name,
         },
       });
+      const user = UserSchema.parse(dbUser);
       return { jwt: createAccessToken(user), user };
     }),
 
