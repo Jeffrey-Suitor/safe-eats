@@ -15,6 +15,7 @@
 #include "spi.h"
 #include "temperature_sensor.h"
 // #include "watchdogs.h"
+#include "qr_scanner.h"
 #include "wifi.h"
 
 EventGroupHandle_t DeviceStatus;
@@ -24,7 +25,7 @@ char APPLIANCE_TYPE[64];
 void app_main() {
     DeviceStatus = xEventGroupCreate();
     gpio_install_isr_service(0);
-    SetupConsole();
+    // SetupConsole();
     SetupFlash();
 
     // Get the device ID from the flash
@@ -46,9 +47,11 @@ void app_main() {
     sntp_setservername(0, "pool.ntp.org");
     sntp_init();
 
-    SetupSpi();
+    SetupQRScanner();
+
+    // SetupSpi();
     // SetupWifi();
-    SetupTempSensor();
+    // SetupTempSensor();
     // SetupRelayController();
     // SetupBuzzer();
     // SetupQrReceiver();
