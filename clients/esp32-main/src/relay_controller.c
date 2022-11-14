@@ -59,6 +59,7 @@ void RelayControllerTask(void *PvParams) {
 }
 
 void SetupRelayController(void) {
+    ESP_LOGD(TAG, "Setting up relay controller");
     int pin_mask = 0;
     for (int i = 0; i < NELEMS(RelayDevices); i++) {
         BIT_SET(pin_mask, RelayDevices[i]);
@@ -77,4 +78,5 @@ void SetupRelayController(void) {
     BaseType_t task = xTaskCreate(RelayControllerTask, "RelayController", 4096, NULL, 5, &RelayController);
 
     if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create relay controller task");
+    ESP_LOGD(TAG, "Relay controller task created");
 }

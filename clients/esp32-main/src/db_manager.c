@@ -11,14 +11,13 @@
 #include "esp_tls.h"
 #include "esp_wifi.h"
 #include "helpers.h"
+#include "qr_scanner.h"
 #include "temperature_sensor.h"
 
 #define TAG "DB_MANAGER"
 #define MAX_REQ_LEN 1024
 #define URL_LEN MAX_REQ_LEN * 2
 #define BASE_URL "https://capstone-29ebb-default-rtdb.firebaseio.com"
-
-QueueHandle_t QRCodeQueue;
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt) {
     static char *output_buffer;  // Buffer to store response of http request from event handler
@@ -294,7 +293,6 @@ void IsRunningTask(void *args) {
 }
 
 void SetupDBManager(void) {
-    QRCodeQueue = xQueueCreate(1, sizeof(Recipe));
     xTaskCreate(FetchRecipeTask, "FetchRecipeTask", 4096 * 3, NULL, 2, NULL);
     xTaskCreate(PostTemperatureTask, "PostTemperatureTask", 4096 * 2, NULL, 3, NULL);
     xTaskCreate(DefineInDatabaseTask, "DefineInDatabaseTask", 4096 * 2, NULL, 2, NULL);

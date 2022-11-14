@@ -4,6 +4,23 @@
     "*.excalidrawlib": "json",
     "uart.h": "c",
     "freertos.h": "c",
-    "task.h": "c"
+    "task.h": "c",
+    "spi_master.h": "c",
+    "config.h": "c",
+    "event_groups.h": "c",
+    "gpio.h": "c",
+    "esp_crt_bundle.h": "c",
+    "console.h": "c",
+    "cooking_controller.h": "c",
+    "esp_log.h": "c",
+    "esp_sntp.h": "c",
+    "flash.h": "c",
+    "helpers.h": "c",
+    "qr_scanner.h": "c",
+    "relay_controller.h": "c",
+    "temperature_sensor.h": "c",
+    "wifi.h": "c",
+    "db_manager.h": "c",
+    "string_view": "c"
   }
 }

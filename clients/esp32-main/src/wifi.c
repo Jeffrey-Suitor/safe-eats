@@ -32,6 +32,7 @@ static void WifiEventHandler(void *arg, esp_event_base_t event_base, int32_t eve
 }
 
 void SetupWifi(void) {
+    ESP_LOGD(TAG, "Setting up wifi");
     ESP_ERROR_CHECK(esp_netif_init());
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -65,4 +66,5 @@ void SetupWifi(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_LOGD(TAG, "Wifi setup complete");
 }

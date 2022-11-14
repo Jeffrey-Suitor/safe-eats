@@ -127,6 +127,7 @@ esp_err_t FlashGet(nvs_type_t type, const char *key, void *output_KEYation, size
 }
 
 void SetupFlash(void) {
+    ESP_LOGD(TAG, "Setting up flash");
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -135,4 +136,5 @@ void SetupFlash(void) {
     }
     ESP_ERROR_CHECK(ret);
     RegisterFlash();
+    ESP_LOGD(TAG, "Flash setup complete");
 }

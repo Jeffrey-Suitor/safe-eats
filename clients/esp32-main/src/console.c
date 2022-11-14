@@ -343,6 +343,7 @@ static void RegisterLogLevel(void) {
 }
 
 void SetupConsole(void) {
+    ESP_LOGD(TAG, "Setting up console");
     esp_console_repl_t *repl = NULL;
     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     esp_console_dev_uart_config_t uart_config = ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
@@ -365,4 +366,5 @@ void SetupConsole(void) {
     ESP_ERROR_CHECK(esp_console_new_repl_uart(&uart_config, &repl_config, &repl));
 
     ESP_ERROR_CHECK(esp_console_start_repl(repl));
+    ESP_LOGD(TAG, "Console setup finished");
 }

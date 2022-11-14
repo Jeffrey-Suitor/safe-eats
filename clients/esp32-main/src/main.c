@@ -7,25 +7,24 @@
 #include "console.h"
 #include "cooking_controller.h"
 #include "db_manager.h"
+#include "esp_log.h"
 #include "esp_sntp.h"
 #include "flash.h"
 #include "helpers.h"
-// #include "qr_receiver.h"
-#include "relay_controller.h"
-#include "spi.h"
-#include "temperature_sensor.h"
-// #include "watchdogs.h"
 #include "qr_scanner.h"
+#include "relay_controller.h"
+#include "temperature_sensor.h"
 #include "wifi.h"
 
 EventGroupHandle_t DeviceStatus;
 char ID[64];
 char APPLIANCE_TYPE[64];
+#define TAG "Main"
 
 void app_main() {
     DeviceStatus = xEventGroupCreate();
     gpio_install_isr_service(0);
-    // SetupConsole();
+    SetupConsole();
     SetupFlash();
 
     // Get the device ID from the flash
@@ -34,6 +33,7 @@ void app_main() {
         GetUniqueID(ID);
         FlashSet(NVS_TYPE_STR, ID_KEY, ID, 64);
     }
+    ESP_LOGI(TAG, "Device ID: %s", ID);
 
     // Get the device type from the flash
     if (FlashGet(NVS_TYPE_STR, APPLIANCE_TYPE_KEY, APPLIANCE_TYPE, 64) != ESP_OK) {
@@ -41,25 +41,19 @@ void app_main() {
         strcpy(APPLIANCE_TYPE, DEFAULT_APPLIANCE_TYPE);
         FlashSet(NVS_TYPE_STR, APPLIANCE_TYPE_KEY, APPLIANCE_TYPE, 64);
     }
+    ESP_LOGI(TAG, "Appliance Type: %s", APPLIANCE_TYPE);
 
     // Setup timesync
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
     sntp_init();
+    ESP_LOGD(TAG, "Time synced setup");
 
-    SetupQRScanner();
-
-    // SetupSpi();
     // SetupWifi();
-    // SetupTempSensor();
-    // SetupRelayController();
-    // SetupBuzzer();
-    // SetupQrReceiver();
-    // SetupWatchdogs();
-    // SetupCookingController();
+    SetupTempSensor();
+    SetupQRScanner();
+    SetupRelayController();
+    SetupBuzzer();
+    SetupCookingController();
     // SetupDBManager();
-
-    // // Send a recipe
-    // char recipe[QR_CODE_LENGTH] = "A843B2EB";-
-    // xQueueSend(QRCodeQueue, &recipe, portMAX_DELAY);
 }
