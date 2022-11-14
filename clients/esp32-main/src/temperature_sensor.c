@@ -20,24 +20,21 @@ float TempSensorRead() {
   spi_transaction_t trans = {
       .tx_buffer = NULL,
       .rx_buffer = &data,
-      .length = 16,
-      .rxlength = 16,
+      .length = TEMP_SENSOR_DATA_LEN,
+      .rxlength = TEMP_SENSOR_DATA_LEN,
   };
 
   spi_device_acquire_bus(temp_spi_handle, portMAX_DELAY);
   spi_device_transmit(temp_spi_handle, &trans);
   spi_device_release_bus(temp_spi_handle);
 
-  ESP_LOGI(TAG, "Raw data: %d", data);
-
-  int16_t res = (int16_t)SPI_SWAP_DATA_RX(data, 16);
+  int16_t res = (int16_t)SPI_SWAP_DATA_RX(data, TEMP_SENSOR_DATA_LEN);
 
   if (res & (1 << 2)) {
     ESP_LOGE(TAG, "Sensor is not connected\n");
     return 1000;
   } else {
     res >>= 3;
-    printf("SPI res = %d temp=%f\n", res, res * 0.25);
     return res * 0.25;
   }
 }
@@ -61,7 +58,7 @@ void SetupTempSensor(void) {
       .sclk_io_num = SPI_CLK,
       .quadwp_io_num = -1,
       .quadhd_io_num = -1,
-      .max_transfer_sz = (4 * 8),
+      .max_transfer_sz = TEMP_SENSOR_DATA_LEN,
   };
 
   ESP_ERROR_CHECK(spi_bus_initialize(VSPI_HOST, &busCfg, SPI_DMA_CH_AUTO));

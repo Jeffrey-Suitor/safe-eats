@@ -8,10 +8,13 @@ extern void SetupTempSensor(void);
 extern QueueHandle_t TempSensorQueue;
 extern TaskHandle_t TempSensor;
 
-typedef struct Temperature
-{
-    float c; // celcius
-    float f; // farenheit
+#define SPI_CLK GPIO_NUM_18
+#define SPI_MISO GPIO_NUM_19
+#define TEMP_SENSOR_CS GPIO_NUM_5
+#define TEMP_SENSOR_DATA_LEN 16
+typedef struct Temperature {
+  float c; // celcius
+  float f; // farenheit
 } Temperature;
 
 #endif

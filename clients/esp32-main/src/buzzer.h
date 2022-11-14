@@ -28,10 +28,12 @@ extern QueueHandle_t BuzzerQueue;
 #define gSH 830
 #define aH 880
 
+#define BUZZER_PIN GPIO_NUM_27
+
 typedef struct BuzzerNote {
-    uint32_t freq;
-    uint32_t duration;
-    uint32_t repeats;
+  uint32_t freq;
+  uint32_t duration;
+  uint32_t repeats;
 } BuzzerNote;
 
 extern BuzzerNote ThermalRunAwayAlarm;
