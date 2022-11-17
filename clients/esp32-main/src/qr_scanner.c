@@ -19,8 +19,7 @@ void QRScannerTask(void *args) {
   char *qr_code;
 
   while (true) {
-    size = uart_read_bytes(UART_PORT, data, (QR_CODE_LENGTH - 1),
-                           20 / portTICK_PERIOD_MS);
+    size = uart_read_bytes(UART_PORT, data, (QR_CODE_LENGTH - 1), 20 / portTICK_PERIOD_MS);
     if (size) {
       data[size] = '\0';
       qr_code = (char *)data;
@@ -41,17 +40,13 @@ void SetupQRScanner(void) {
       .source_clk = UART_SCLK_REF_TICK,
   };
 
-  ESP_ERROR_CHECK(
-      uart_driver_install(UART_PORT, QR_CODE_LENGTH * 2, 0, 0, NULL, 0));
+  ESP_ERROR_CHECK(uart_driver_install(UART_PORT, QR_CODE_LENGTH * 2, 0, 0, NULL, 0));
   ESP_ERROR_CHECK(uart_param_config(UART_PORT, &uart_config));
-  ESP_ERROR_CHECK(uart_set_pin(UART_PORT, UART_TXD, UART_RXD,
-                               UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+  ESP_ERROR_CHECK(uart_set_pin(UART_PORT, UART_TXD, UART_RXD, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
   ESP_LOGD(TAG, "QR Scanner UART Configured");
 
   QRCodeQueue = xQueueCreate(1, QR_CODE_LENGTH);
-  BaseType_t task = xTaskCreate(QRScannerTask, "uart_read_task",
-                                QR_CODE_LENGTH * 2, NULL, 6, NULL);
-  if (task == pdFALSE)
-    ESP_LOGE(TAG, "Failed to create QR scanner task");
+  BaseType_t task = xTaskCreate(QRScannerTask, "uart_read_task", QR_CODE_LENGTH * 2, NULL, 6, NULL);
+  if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create QR scanner task");
   ESP_LOGD(TAG, "QR scanner task created");
 }

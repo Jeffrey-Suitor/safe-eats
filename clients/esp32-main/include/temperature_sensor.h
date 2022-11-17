@@ -13,8 +13,8 @@ extern TaskHandle_t TempSensor;
 #define TEMP_SENSOR_CS GPIO_NUM_5
 #define TEMP_SENSOR_DATA_LEN 16
 typedef struct Temperature {
-  float c; // celcius
-  float f; // farenheit
+  float c;  // celcius
+  float f;  // farenheit
 } Temperature;
 
 #endif

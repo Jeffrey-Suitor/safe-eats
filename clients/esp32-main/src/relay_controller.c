@@ -15,8 +15,7 @@ TaskHandle_t RelayController;
 EventGroupHandle_t RelayControllerFlags;
 
 int RelayDevices[] = {
-    INDICATOR_LIGHT_PIN, TOP_HEATING_ELEMENT_PIN, BOTTOM_HEATING_ELEMENT_PIN,
-    CONVECTION_FAN_PIN,  ROTISERRIE_PIN,
+    INDICATOR_LIGHT_PIN, TOP_HEATING_ELEMENT_PIN, BOTTOM_HEATING_ELEMENT_PIN, CONVECTION_FAN_PIN, ROTISERRIE_PIN,
 };
 
 void RelayControllerTask(void *PvParams) {
@@ -24,8 +23,7 @@ void RelayControllerTask(void *PvParams) {
   const int length = NELEMS(RelayDevices);
   EventBits_t bits;
   while (true) {
-    bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE,
-                               pdMS_TO_TICKS(1000));
+    bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
 
     if (bits & EMERGENCY_STOP) {
       for (i = 0; i <= length; i++) {
@@ -33,8 +31,7 @@ void RelayControllerTask(void *PvParams) {
       }
       while (true) {
         vTaskDelay(pdMS_TO_TICKS(500));
-        bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE,
-                                   pdFALSE, pdMS_TO_TICKS(1000));
+        bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
         if (bits & EMERGENCY_STOP) {
           ESP_LOGE(TAG, "Emergency stopped");
           break;
@@ -42,8 +39,7 @@ void RelayControllerTask(void *PvParams) {
       }
     }
 
-    bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdFALSE,
-                               pdMS_TO_TICKS(1000));
+    bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
 
     if (!(bits & IS_COOKING)) {
       for (i = 0; i <= length; i++) {
@@ -79,10 +75,8 @@ void SetupRelayController(void) {
 
   RelayControllerFlags = xEventGroupCreate();
 
-  BaseType_t task = xTaskCreate(RelayControllerTask, "RelayController", 4096,
-                                NULL, 5, &RelayController);
+  BaseType_t task = xTaskCreate(RelayControllerTask, "RelayController", 4096, NULL, 5, &RelayController);
 
-  if (task == pdFALSE)
-    ESP_LOGE(TAG, "Failed to create relay controller task");
+  if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create relay controller task");
   ESP_LOGD(TAG, "Relay controller task created");
 }

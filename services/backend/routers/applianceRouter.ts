@@ -16,6 +16,15 @@ import {
 } from "../utils/pushNotifications";
 
 export const applianceRouter = router({
+  exists: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
+    const appliance = await prisma.appliance.findUnique({
+      where: {
+        id: input,
+      },
+    });
+    return appliance != null;
+  }),
+
   add: authedProcedure
     .input(ApplianceSchema)
     .mutation(async ({ input, ctx }) => {

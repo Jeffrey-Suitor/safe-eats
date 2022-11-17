@@ -11,24 +11,23 @@
 
 #define TAG "WIFI"
 
-static void WifiEventHandler(void *arg, esp_event_base_t event_base,
-                             int32_t event_id, void *event_data) {
+static void WifiEventHandler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
   switch (event_id) {
-  case WIFI_EVENT_STA_START:
-    ESP_LOGI(TAG, "WIFI STARTED");
-    esp_wifi_connect();
-    break;
-  case WIFI_EVENT_STA_DISCONNECTED:
-    ESP_LOGI(TAG, "WIFI DISCONNECTED");
-    esp_wifi_connect();
-    xEventGroupClearBits(DeviceStatus, WIFI_CONNECTED);
-    break;
-  case IP_EVENT_STA_GOT_IP:
-    ESP_LOGI(TAG, "WIFI ACTIVE");
-    xEventGroupSetBits(DeviceStatus, WIFI_CONNECTED);
-    break;
-  default:
-    break;
+    case WIFI_EVENT_STA_START:
+      ESP_LOGI(TAG, "WIFI STARTED");
+      esp_wifi_connect();
+      break;
+    case WIFI_EVENT_STA_DISCONNECTED:
+      ESP_LOGI(TAG, "WIFI DISCONNECTED");
+      esp_wifi_connect();
+      xEventGroupClearBits(DeviceStatus, WIFI_CONNECTED);
+      break;
+    case IP_EVENT_STA_GOT_IP:
+      ESP_LOGI(TAG, "WIFI ACTIVE");
+      xEventGroupSetBits(DeviceStatus, WIFI_CONNECTED);
+      break;
+    default:
+      break;
   }
 }
 
@@ -42,26 +41,16 @@ void SetupWifi(void) {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-  ESP_ERROR_CHECK(esp_event_handler_instance_register(
-      ESP_EVENT_ANY_BASE, ESP_EVENT_ANY_ID, &WifiEventHandler, NULL, NULL));
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(ESP_EVENT_ANY_BASE, ESP_EVENT_ANY_ID, &WifiEventHandler, NULL, NULL));
 
   char wifi_ssid[32];
   char wifi_pass[32];
-  if (FlashGet(NVS_TYPE_STR, WIFI_SSID_KEY, wifi_ssid, 32) != ESP_OK) {
-    strcpy(wifi_ssid, DEFAULT_WIFI_SSID);
-    FlashSet(NVS_TYPE_STR, WIFI_SSID_KEY, wifi_ssid, 32);
-    ESP_LOGW(TAG, "Using default wifi ssid");
-  }
+  FlashStringFallback(NVS_TYPE_STR, WIFI_SSID_KEY, wifi_ssid, 32, DEFAULT_WIFI_SSID);
+  FlashStringFallback(NVS_TYPE_STR, WIFI_PASS_KEY, wifi_pass, 32, DEFAULT_WIFI_PASS);
 
-  if (FlashGet(NVS_TYPE_STR, WIFI_PASS_KEY, wifi_pass, 32) != ESP_OK) {
-    strcpy(wifi_pass, DEFAULT_WIFI_PASS);
-    FlashSet(NVS_TYPE_STR, WIFI_PASS_KEY, wifi_pass, 32);
-    ESP_LOGW(TAG, "Using default wifi pass");
-  }
+  ESP_LOGE(TAG, "Connecting to wifi: %s pass: %s", wifi_ssid, wifi_pass);
 
-  wifi_config_t wifi_config = {
-      .sta = {.threshold.authmode = WIFI_AUTH_WPA2_PSK,
-              .pmf_cfg = {.capable = true, .required = false}}};
+  wifi_config_t wifi_config = {.sta = {.threshold.authmode = WIFI_AUTH_WPA2_PSK, .pmf_cfg = {.capable = true, .required = false}}};
   memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_ssid));
   memcpy(wifi_config.sta.password, wifi_pass, sizeof(wifi_pass));
 

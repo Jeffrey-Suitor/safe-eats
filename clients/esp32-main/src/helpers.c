@@ -9,17 +9,15 @@
 // large enough to store the result.  If it is too small, the output is
 // truncated.
 size_t TrimWhitespace(char *out, size_t len, const char *str) {
-  if (len == 0)
-    return 0;
+  if (len == 0) return 0;
 
   const char *end;
   size_t out_size;
 
   // Trim leading space
-  while (isspace((unsigned char)*str))
-    str++;
+  while (isspace((unsigned char)*str)) str++;
 
-  if (*str == 0) // All spaces?
+  if (*str == 0)  // All spaces?
   {
     *out = 0;
     return 1;
@@ -27,8 +25,7 @@ size_t TrimWhitespace(char *out, size_t len, const char *str) {
 
   // Trim trailing space
   end = str + strlen(str) - 1;
-  while (end > str && isspace((unsigned char)*end))
-    end--;
+  while (end > str && isspace((unsigned char)*end)) end--;
   end++;
 
   // Set output size to minimum of trimmed string length and buffer size minus 1
@@ -44,6 +41,5 @@ size_t TrimWhitespace(char *out, size_t len, const char *str) {
 void GetUniqueID(char *str) {
   uint8_t mac[6] = {0};
   esp_efuse_mac_get_default(mac);
-  sprintf(str, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3],
-          mac[4], mac[5]);
+  sprintf(str, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }

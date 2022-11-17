@@ -19,16 +19,12 @@ typedef struct {
 } type_str_pair_t;
 
 static const type_str_pair_t type_str_pair[] = {
-    {NVS_TYPE_I8, "i8"},     {NVS_TYPE_U8, "u8"},   {NVS_TYPE_U16, "u16"},
-    {NVS_TYPE_I16, "i16"},   {NVS_TYPE_U32, "u32"}, {NVS_TYPE_I32, "i32"},
-    {NVS_TYPE_U64, "u64"},   {NVS_TYPE_I64, "i64"}, {NVS_TYPE_STR, "str"},
-    {NVS_TYPE_BLOB, "blob"}, {NVS_TYPE_ANY, "any"},
+    {NVS_TYPE_I8, "i8"},   {NVS_TYPE_U8, "u8"},   {NVS_TYPE_U16, "u16"}, {NVS_TYPE_I16, "i16"},   {NVS_TYPE_U32, "u32"}, {NVS_TYPE_I32, "i32"},
+    {NVS_TYPE_U64, "u64"}, {NVS_TYPE_I64, "i64"}, {NVS_TYPE_STR, "str"}, {NVS_TYPE_BLOB, "blob"}, {NVS_TYPE_ANY, "any"},
 };
 
-static const size_t TYPE_STR_PAIR_SIZE =
-    sizeof(type_str_pair) / sizeof(type_str_pair[0]);
-static const char *ARG_TYPE_STR =
-    "type can be: i8, u8, i16, u16 i32, u32 i64, u64, str, blob";
+static const size_t TYPE_STR_PAIR_SIZE = sizeof(type_str_pair) / sizeof(type_str_pair[0]);
+static const char *ARG_TYPE_STR = "type can be: i8, u8, i16, u16 i32, u32 i64, u64, str, blob";
 static const char *TAG = "CMD_NVS";
 
 static struct {
@@ -88,8 +84,7 @@ static const char *TypeToStr(nvs_type_t type) {
   return "Unknown";
 }
 
-static esp_err_t StoreBlob(nvs_handle_t nvs, const char *key,
-                           const char *str_values) {
+static esp_err_t StoreBlob(nvs_handle_t nvs, const char *key, const char *str_values) {
   uint8_t value;
   size_t str_len = strlen(str_values);
   size_t blob_len = str_len / 2;
@@ -142,8 +137,7 @@ static void PrintBlob(const char *blob, size_t len) {
   printf("\n");
 }
 
-static esp_err_t FlashSetConsole(const char *key, const char *str_type,
-                                 const char *str_value) {
+static esp_err_t FlashSetConsole(const char *key, const char *str_type, const char *str_value) {
   esp_err_t err;
   nvs_handle_t nvs;
   bool range_error = false;
@@ -342,8 +336,7 @@ static esp_err_t EraseAll(const char *name) {
     }
   }
 
-  ESP_LOGI(TAG, "NAMESPACE '%s' was %s Erased", name,
-           (err == ESP_OK) ? "" : "not");
+  ESP_LOGI(TAG, "NAMESPACE '%s' was %s Erased", name, (err == ESP_OK) ? "" : "not");
 
   nvs_close(nvs);
   return ESP_OK;
@@ -363,8 +356,7 @@ static int ListItems(const char *part, const char *name, const char *str_type) {
     nvs_entry_info(it, &info);
     it = nvs_entry_next(it);
 
-    printf("namespace '%s', key '%s', type '%s' \n", info.namespace_name,
-           info.key, TypeToStr(info.type));
+    printf("namespace '%s', key '%s', type '%s' \n", info.namespace_name, info.key, TypeToStr(info.type));
   } while (it != NULL);
 
   return 0;
@@ -489,75 +481,66 @@ void RegisterFlash(void) {
   get_args.type = arg_str1(NULL, NULL, "<type>", ARG_TYPE_STR);
   get_args.end = arg_end(2);
 
-  erase_args.key =
-      arg_str1(NULL, NULL, "<key>", "key of the value to be Erased");
+  erase_args.key = arg_str1(NULL, NULL, "<key>", "key of the value to be Erased");
   erase_args.end = arg_end(2);
 
-  erase_all_args.namespace =
-      arg_str1(NULL, NULL, "<namespace>", "namespace to be Erased");
+  erase_all_args.namespace = arg_str1(NULL, NULL, "<namespace>", "namespace to be Erased");
   erase_all_args.end = arg_end(2);
 
-  namespace_args.namespace = arg_str1(
-      NULL, NULL, "<namespace>", "namespace of the partition to be selected");
+  namespace_args.namespace = arg_str1(NULL, NULL, "<namespace>", "namespace of the partition to be selected");
   namespace_args.end = arg_end(2);
 
   list_args.partition = arg_str1(NULL, NULL, "<partition>", "partition name");
-  list_args.namespace =
-      arg_str0("n", "namespace", "<namespace>", "namespace name");
+  list_args.namespace = arg_str0("n", "namespace", "<namespace>", "namespace name");
   list_args.type = arg_str0("t", "type", "<type>", ARG_TYPE_STR);
   list_args.end = arg_end(2);
 
-  const esp_console_cmd_t set_cmd = {
-      .command = "nvs_set",
-      .help = "Set key-value pair in selected namespace.\n"
-              "Examples:\n"
-              " nvs_set VarName i32 -v 123 \n"
-              " nvs_set VarName str -v YourString \n"
-              " nvs_set VarName blob -v 0123456789abcdef \n",
-      .hint = NULL,
-      .func = &SetValue,
-      .argtable = &set_args};
+  const esp_console_cmd_t set_cmd = {.command = "nvs_set",
+                                     .help =
+                                         "Set key-value pair in selected namespace.\n"
+                                         "Examples:\n"
+                                         " nvs_set VarName i32 -v 123 \n"
+                                         " nvs_set VarName str -v YourString \n"
+                                         " nvs_set VarName blob -v 0123456789abcdef \n",
+                                     .hint = NULL,
+                                     .func = &SetValue,
+                                     .argtable = &set_args};
 
-  const esp_console_cmd_t get_cmd = {
-      .command = "nvs_get",
-      .help = "Get key-value pair from selected namespace. \n"
-              "Example: nvs_get VarName i32",
-      .hint = NULL,
-      .func = &GetValue,
-      .argtable = &get_args};
+  const esp_console_cmd_t get_cmd = {.command = "nvs_get",
+                                     .help =
+                                         "Get key-value pair from selected namespace. \n"
+                                         "Example: nvs_get VarName i32",
+                                     .hint = NULL,
+                                     .func = &GetValue,
+                                     .argtable = &get_args};
 
-  const esp_console_cmd_t Erase_cmd = {
-      .command = "nvs_erase",
-      .help = "Erase key-value pair from current namespace",
-      .hint = NULL,
-      .func = &EraseValue,
-      .argtable = &erase_args};
+  const esp_console_cmd_t Erase_cmd = {.command = "nvs_erase",
+                                       .help = "Erase key-value pair from current namespace",
+                                       .hint = NULL,
+                                       .func = &EraseValue,
+                                       .argtable = &erase_args};
 
-  const esp_console_cmd_t EraseNamespace_cmd = {
-      .command = "nvs_erase_namespace",
-      .help = "Erases specified namespace",
-      .hint = NULL,
-      .func = &EraseNamespace,
-      .argtable = &erase_all_args};
+  const esp_console_cmd_t EraseNamespace_cmd = {.command = "nvs_erase_namespace",
+                                                .help = "Erases specified namespace",
+                                                .hint = NULL,
+                                                .func = &EraseNamespace,
+                                                .argtable = &erase_all_args};
 
-  const esp_console_cmd_t namespace_cmd = {.command = "nvs_namespace",
-                                           .help = "Set current namespace",
-                                           .hint = NULL,
-                                           .func = &SetNamespace,
-                                           .argtable = &namespace_args};
+  const esp_console_cmd_t namespace_cmd = {
+      .command = "nvs_namespace", .help = "Set current namespace", .hint = NULL, .func = &SetNamespace, .argtable = &namespace_args};
 
-  const esp_console_cmd_t ListEntries_cmd = {
-      .command = "nvs_list",
-      .help = "List stored key-value pairs stored in NVS."
-              "Namespace and type can be specified to print only those "
-              "key-value pairs.\n"
-              "Following command list variables stored inside 'nvs' partition, "
-              "under namespace 'storage' with type "
-              "uint32_t"
-              "Example: nvs_list nvs -n storage -t u32 \n",
-      .hint = NULL,
-      .func = &ListEntries,
-      .argtable = &list_args};
+  const esp_console_cmd_t ListEntries_cmd = {.command = "nvs_list",
+                                             .help =
+                                                 "List stored key-value pairs stored in NVS."
+                                                 "Namespace and type can be specified to print only those "
+                                                 "key-value pairs.\n"
+                                                 "Following command list variables stored inside 'nvs' partition, "
+                                                 "under namespace 'storage' with type "
+                                                 "uint32_t"
+                                                 "Example: nvs_list nvs -n storage -t u32 \n",
+                                             .hint = NULL,
+                                             .func = &ListEntries,
+                                             .argtable = &list_args};
 
   ESP_ERROR_CHECK(esp_console_cmd_register(&set_cmd));
   ESP_ERROR_CHECK(esp_console_cmd_register(&get_cmd));

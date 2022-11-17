@@ -13,8 +13,8 @@ extern char APPLIANCE_TYPE[64];
 
 #define WIFI_SSID_KEY "WIFI_SSID"
 #define WIFI_PASS_KEY "WIFI_PASS"
-#define DEFAULT_WIFI_SSID "Samsung"
-#define DEFAULT_WIFI_PASS "jeffsuitor"
+#define DEFAULT_WIFI_PASS "class1509finish"
+#define DEFAULT_WIFI_SSID "SHAW-05C9"
 
 #define MAXIMUM_RETRY 10
 
@@ -33,8 +33,10 @@ extern char APPLIANCE_TYPE[64];
 
 #define EMERGENCY_STOP BIT0
 #define WIFI_CONNECTED BIT1
-#define DEFINED_IN_DB BIT2
-#define IS_COOKING BIT3
+#define WEBSOCKET_CONNECTED BIT2
+#define DEFINED_IN_DB BIT3
+#define IS_COOKING BIT4
+
 extern EventGroupHandle_t DeviceStatus;
 
 typedef struct Recipe {

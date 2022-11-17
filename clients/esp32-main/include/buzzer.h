@@ -14,9 +14,9 @@ extern QueueHandle_t BuzzerQueue;
 // #define f 349
 // #define g 391
 // #define gS 415
-#define a 440
+#define a_NOTE 440
 // #define aS 455
-#define b 466
+#define b_NOTE 466
 // #define cH 523
 // #define cSH 554
 // #define dH 587
@@ -25,8 +25,8 @@ extern QueueHandle_t BuzzerQueue;
 // #define fH 698
 // #define fSH 740
 // #define gH 784
-#define gSH 830
-#define aH 880
+#define gSH_NOTE 830
+#define aH_NOTE 880
 
 #define BUZZER_PIN GPIO_NUM_27
 

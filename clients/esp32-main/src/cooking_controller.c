@@ -58,9 +58,7 @@ void CookingControllerTask(void *PvParams) {
         count = 0;
       }
 
-      temperature = strcmp(recipe.appliance_temp_unit, "C") == 0
-                        ? temp_reading.c
-                        : temp_reading.f;
+      temperature = strcmp(recipe.appliance_temp_unit, "C") == 0 ? temp_reading.c : temp_reading.f;
       if (abs(temperature - recipe.appliance_temp) < 5) {
         continue;
       } else if (temperature < recipe.appliance_temp) {
@@ -75,17 +73,13 @@ void CookingControllerTask(void *PvParams) {
         break;
       }
 
-      bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE,
-                                 pdMS_TO_TICKS(1000));
+      bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
       if (bits & EMERGENCY_STOP) {
         ESP_LOGE(TAG, "EMERGENCY STOP: STOPPING COOKING");
         break;
       }
     }
-    xEventGroupClearBits(RelayControllerFlags, INDICATOR_LIGHT |
-                                                   TOP_HEATING_ELEMENT |
-                                                   BOTTOM_HEATING_ELEMENT |
-                                                   CONVECTION_FAN | ROTISERRIE);
+    xEventGroupClearBits(RelayControllerFlags, INDICATOR_LIGHT | TOP_HEATING_ELEMENT | BOTTOM_HEATING_ELEMENT | CONVECTION_FAN | ROTISERRIE);
     xEventGroupClearBits(DeviceStatus, IS_COOKING);
     xQueueSend(BuzzerQueue, (void *)&MealFinished, 100);
     vTaskDelay(5000);
@@ -95,9 +89,7 @@ void CookingControllerTask(void *PvParams) {
 void SetupCookingController(void) {
   ESP_LOGD(TAG, "Setting up cooking controller");
   RecipeQueue = xQueueCreate(1, sizeof(Recipe));
-  BaseType_t task = xTaskCreate(CookingControllerTask, "cooking_task", 4096 * 2,
-                                NULL, 5, &CookingController);
-  if (task == pdFALSE)
-    ESP_LOGE(TAG, "Failed to create cooking controller task");
+  BaseType_t task = xTaskCreate(CookingControllerTask, "cooking_task", 4096 * 2, NULL, 5, &CookingController);
+  if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create cooking controller task");
   ESP_LOGD(TAG, "Finished setting up cooking controller");
 }

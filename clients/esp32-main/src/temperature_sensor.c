@@ -46,7 +46,7 @@ void TempSensorTask(void *pvParams) {
     temp.f = roundf(temp.c * 1.8 + 32.0);
     ESP_LOGI(TAG, "C: %f, F: %f", temp.c, temp.f);
     xQueueOverwrite(TempSensorQueue, &temp);
-    vTaskDelay(pdMS_TO_TICKS(1000)); // 1 second delay
+    vTaskDelay(pdMS_TO_TICKS(1000));  // 1 second delay
   }
 }
 
@@ -72,13 +72,14 @@ void SetupTempSensor(void) {
       .cs_ena_posttrans = 3,
       .cs_ena_pretrans = 3,
   };
-  ESP_ERROR_CHECK(
-      spi_bus_add_device(VSPI_HOST, &temp_sensor_cfg, &temp_spi_handle));
+  ESP_ERROR_CHECK(spi_bus_add_device(VSPI_HOST, &temp_sensor_cfg, &temp_spi_handle));
 
   TempSensorQueue = xQueueCreate(1, sizeof(Temperature));
-  BaseType_t task = xTaskCreate(TempSensorTask, "TemperatureTask", 4096, NULL,
-                                3, &TempSensor);
-  if (task == pdFALSE)
-    ESP_LOGE(TAG, "Failed to create temperature sensor task");
+  if (TempSensorQueue == NULL) {
+    ESP_LOGE(TAG, "Failed to create temperature sensor queue");
+  }
+
+  BaseType_t task = xTaskCreate(TempSensorTask, "TemperatureTask", 4096, NULL, 3, &TempSensor);
+  if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create temperature sensor task");
   ESP_LOGD(TAG, "Temperature sensor setup complete");
 }

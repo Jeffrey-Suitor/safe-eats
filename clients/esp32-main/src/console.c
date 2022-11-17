@@ -28,34 +28,30 @@ static int GetVersion(int argc, char **argv) {
   esp_chip_info(&info);
 
   switch (info.model) {
-  case CHIP_ESP32:
-    model = "ESP32";
-    break;
-  case CHIP_ESP32S2:
-    model = "ESP32-S2";
-    break;
-  case CHIP_ESP32S3:
-    model = "ESP32-S3";
-    break;
-  case CHIP_ESP32C3:
-    model = "ESP32-C3";
-    break;
-  default:
-    model = "Unknown";
-    break;
+    case CHIP_ESP32:
+      model = "ESP32";
+      break;
+    case CHIP_ESP32S2:
+      model = "ESP32-S2";
+      break;
+    case CHIP_ESP32S3:
+      model = "ESP32-S3";
+      break;
+    case CHIP_ESP32C3:
+      model = "ESP32-C3";
+      break;
+    default:
+      model = "Unknown";
+      break;
   }
 
   printf("IDF Version:%s\r\n", esp_get_idf_version());
   printf("Chip info:\r\n");
   printf("\tmodel:%s\r\n", model);
   printf("\tcores:%d\r\n", info.cores);
-  printf("\tfeature:%s%s%s%s%d%s\r\n",
-         info.features & CHIP_FEATURE_WIFI_BGN ? "/802.11bgn" : "",
-         info.features & CHIP_FEATURE_BLE ? "/BLE" : "",
-         info.features & CHIP_FEATURE_BT ? "/BT" : "",
-         info.features & CHIP_FEATURE_EMB_FLASH ? "/Embedded-Flash:"
-                                                : "/External-Flash:",
-         spi_flash_get_chip_size() / (1024 * 1024), " MB");
+  printf("\tfeature:%s%s%s%s%d%s\r\n", info.features & CHIP_FEATURE_WIFI_BGN ? "/802.11bgn" : "",
+         info.features & CHIP_FEATURE_BLE ? "/BLE" : "", info.features & CHIP_FEATURE_BT ? "/BT" : "",
+         info.features & CHIP_FEATURE_EMB_FLASH ? "/Embedded-Flash:" : "/External-Flash:", spi_flash_get_chip_size() / (1024 * 1024), " MB");
   printf("\trevision number:%d\r\n", info.revision);
   return 0;
 }
@@ -114,8 +110,9 @@ static int HeapSize(int argc, char **argv) {
 static void RegisterHeap(void) {
   const esp_console_cmd_t heap_cmd = {
       .command = "heap",
-      .help = "Get minimum size of free heap memory that was available during "
-              "program execution",
+      .help =
+          "Get minimum size of free heap memory that was available during "
+          "program execution",
       .hint = NULL,
       .func = &HeapSize,
   };
@@ -188,44 +185,40 @@ static int DeepSleep(int argc, char **argv) {
         return 1;
       }
     }
-    ESP_LOGI(TAG, "Enabling wakeup on GPIO%d, wakeup on %s level", io_num,
-             level ? "HIGH" : "LOW");
+    ESP_LOGI(TAG, "Enabling wakeup on GPIO%d, wakeup on %s level", io_num, level ? "HIGH" : "LOW");
 
     ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup(1ULL << io_num, level));
-    ESP_LOGE(TAG,
-             "GPIO wakeup from deep sleep currently unsupported on ESP32-C3");
+    ESP_LOGE(TAG, "GPIO wakeup from deep sleep currently unsupported on ESP32-C3");
   }
-#endif // SOC_PM_SUPPORT_EXT_WAKEUP
+#endif  // SOC_PM_SUPPORT_EXT_WAKEUP
 
 #if CONFIG_IDF_TARGET_ESP32
   rtc_gpio_isolate(GPIO_NUM_12);
-#endif // CONFIG_IDF_TARGET_ESP32
+#endif  // CONFIG_IDF_TARGET_ESP32
 
   esp_deep_sleep_start();
 }
 
 static void RegisterDeepSleep(void) {
   int num_args = 1;
-  deep_sleep_args.wakeup_time =
-      arg_int0("t", "time", "<t>", "Wake up time, ms");
+  deep_sleep_args.wakeup_time = arg_int0("t", "time", "<t>", "Wake up time, ms");
 #if SOC_PM_SUPPORT_EXT_WAKEUP
-  deep_sleep_args.wakeup_gpio_num = arg_int0(
-      NULL, "io", "<n>", "If specified, wakeup using GPIO with given number");
-  deep_sleep_args.wakeup_gpio_level =
-      arg_int0(NULL, "io_level", "<0|1>", "GPIO level to trigger wakeup");
+  deep_sleep_args.wakeup_gpio_num = arg_int0(NULL, "io", "<n>", "If specified, wakeup using GPIO with given number");
+  deep_sleep_args.wakeup_gpio_level = arg_int0(NULL, "io_level", "<0|1>", "GPIO level to trigger wakeup");
   num_args += 2;
 #endif
   deep_sleep_args.end = arg_end(num_args);
 
   const esp_console_cmd_t cmd = {
     .command = "deep_sleep",
-    .help = "Enter deep sleep mode. "
+    .help =
+        "Enter deep sleep mode. "
 #if SOC_PM_SUPPORT_EXT_WAKEUP
-            "Two wakeup modes are supported: timer and GPIO. "
+        "Two wakeup modes are supported: timer and GPIO. "
 #else
-            "Timer wakeup mode is supported. "
+        "Timer wakeup mode is supported. "
 #endif
-            "If no wakeup option is specified, will sleep indefinitely.",
+        "If no wakeup option is specified, will sleep indefinitely.",
     .hint = NULL,
     .func = &DeepSleep,
     .argtable = &deep_sleep_args
@@ -266,17 +259,14 @@ static int LightSleep(int argc, char **argv) {
       ESP_LOGE(TAG, "Invalid wakeup level: %d", level);
       return 1;
     }
-    ESP_LOGI(TAG, "Enabling wakeup on GPIO%d, wakeup on %s level", io_num,
-             level ? "HIGH" : "LOW");
+    ESP_LOGI(TAG, "Enabling wakeup on GPIO%d, wakeup on %s level", io_num, level ? "HIGH" : "LOW");
 
-    ESP_ERROR_CHECK(gpio_wakeup_enable(io_num, level ? GPIO_INTR_HIGH_LEVEL
-                                                     : GPIO_INTR_LOW_LEVEL));
+    ESP_ERROR_CHECK(gpio_wakeup_enable(io_num, level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL));
   }
   if (io_count > 0) {
     ESP_ERROR_CHECK(esp_sleep_enable_gpio_wakeup());
   }
-  if (CONFIG_ESP_CONSOLE_UART_NUM >= 0 &&
-      CONFIG_ESP_CONSOLE_UART_NUM <= UART_NUM_1) {
+  if (CONFIG_ESP_CONSOLE_UART_NUM >= 0 && CONFIG_ESP_CONSOLE_UART_NUM <= UART_NUM_1) {
     ESP_LOGI(TAG, "Enabling UART wakeup (press ENTER to exit light sleep)");
     ESP_ERROR_CHECK(uart_set_wakeup_threshold(CONFIG_ESP_CONSOLE_UART_NUM, 3));
     ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(CONFIG_ESP_CONSOLE_UART_NUM));
@@ -287,43 +277,39 @@ static int LightSleep(int argc, char **argv) {
   esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
   const char *cause_str;
   switch (cause) {
-  case ESP_SLEEP_WAKEUP_GPIO:
-    cause_str = "GPIO";
-    break;
-  case ESP_SLEEP_WAKEUP_UART:
-    cause_str = "UART";
-    break;
-  case ESP_SLEEP_WAKEUP_TIMER:
-    cause_str = "timer";
-    break;
-  default:
-    cause_str = "unknown";
-    printf("%d\n", cause);
+    case ESP_SLEEP_WAKEUP_GPIO:
+      cause_str = "GPIO";
+      break;
+    case ESP_SLEEP_WAKEUP_UART:
+      cause_str = "UART";
+      break;
+    case ESP_SLEEP_WAKEUP_TIMER:
+      cause_str = "timer";
+      break;
+    default:
+      cause_str = "unknown";
+      printf("%d\n", cause);
   }
   ESP_LOGI(TAG, "Woke up from: %s", cause_str);
   return 0;
 }
 
 static void RegisterLightSleep(void) {
-  light_sleep_args.wakeup_time =
-      arg_int0("t", "time", "<t>", "Wake up time, ms");
-  light_sleep_args.wakeup_gpio_num =
-      arg_intn(NULL, "io", "<n>", 0, 8,
-               "If specified, wakeup using GPIO with given number");
-  light_sleep_args.wakeup_gpio_level =
-      arg_intn(NULL, "io_level", "<0|1>", 0, 8, "GPIO level to trigger wakeup");
+  light_sleep_args.wakeup_time = arg_int0("t", "time", "<t>", "Wake up time, ms");
+  light_sleep_args.wakeup_gpio_num = arg_intn(NULL, "io", "<n>", 0, 8, "If specified, wakeup using GPIO with given number");
+  light_sleep_args.wakeup_gpio_level = arg_intn(NULL, "io_level", "<0|1>", 0, 8, "GPIO level to trigger wakeup");
   light_sleep_args.end = arg_end(3);
 
-  const esp_console_cmd_t cmd = {
-      .command = "light_sleep",
-      .help = "Enter light sleep mode. "
-              "Two wakeup modes are supported: timer and GPIO. "
-              "Multiple GPIO pins can be specified using pairs of "
-              "'io' and 'io_level' arguments. "
-              "Will also wake up on UART input.",
-      .hint = NULL,
-      .func = &LightSleep,
-      .argtable = &light_sleep_args};
+  const esp_console_cmd_t cmd = {.command = "light_sleep",
+                                 .help =
+                                     "Enter light sleep mode. "
+                                     "Two wakeup modes are supported: timer and GPIO. "
+                                     "Multiple GPIO pins can be specified using pairs of "
+                                     "'io' and 'io_level' arguments. "
+                                     "Will also wake up on UART input.",
+                                 .hint = NULL,
+                                 .func = &LightSleep,
+                                 .argtable = &light_sleep_args};
   ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
 }
 
@@ -339,8 +325,7 @@ static int LogLevel(int argc, char **argv) {
     arg_print_errors(stderr, log_level_args.end, argv[0]);
     return 1;
   }
-  esp_log_level_set(log_level_args.tag->sval[0],
-                    (esp_log_level_t)log_level_args.log_level->ival[0]);
+  esp_log_level_set(log_level_args.tag->sval[0], (esp_log_level_t)log_level_args.log_level->ival[0]);
   return 0;
 }
 
@@ -349,11 +334,8 @@ static void RegisterLogLevel(void) {
   log_level_args.log_level = arg_int1(NULL, NULL, "<level>", "level");
   log_level_args.end = arg_end(2);
 
-  const esp_console_cmd_t cmd = {.command = "log_level",
-                                 .help = "Change log level. ",
-                                 .hint = NULL,
-                                 .func = &LogLevel,
-                                 .argtable = &log_level_args};
+  const esp_console_cmd_t cmd = {
+      .command = "log_level", .help = "Change log level. ", .hint = NULL, .func = &LogLevel, .argtable = &log_level_args};
   ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
 }
 
@@ -361,8 +343,7 @@ void SetupConsole(void) {
   ESP_LOGD(TAG, "Setting up console");
   esp_console_repl_t *repl = NULL;
   esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
-  esp_console_dev_uart_config_t uart_config =
-      ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
+  esp_console_dev_uart_config_t uart_config = ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
   /* Prompt to be printed before each line.
    * This can be customized, made dynamic, etc.
    */

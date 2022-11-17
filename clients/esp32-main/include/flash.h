@@ -5,8 +5,7 @@
 extern void SetupFlash(void);
 extern void RegisterFlash(void);
 extern char NAMESPACE[NAMESPACE_SIZE];
-extern esp_err_t FlashSet(nvs_type_t type, const char *key, void *value,
-                          size_t size);
-extern esp_err_t FlashGet(nvs_type_t type, const char *key, void *value,
-                          size_t size);
+extern esp_err_t FlashSet(nvs_type_t type, const char *key, void *value, size_t size);
+extern esp_err_t FlashGet(nvs_type_t type, const char *key, void *value, size_t size);
+extern void FlashStringFallback(nvs_type_t type, const char *key, char *output, size_t size, char *fallback);
 #endif

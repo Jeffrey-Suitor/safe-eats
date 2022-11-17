@@ -2,7 +2,7 @@ import { z } from "zod";
 import { DefinedRecipeSchema } from "./recipeTypes";
 import { applianceTypes } from "./applianceConstants";
 
-export const IdSchema = z.string().uuid();
+export const IdSchema = z.string();
 
 export const TemperatureSchema = z.object({
   temperatureC: z.number(),
