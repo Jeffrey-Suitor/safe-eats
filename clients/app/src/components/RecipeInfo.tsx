@@ -1,5 +1,8 @@
 import { Recipe } from "@safe-eats/types/recipeTypes";
-import { millisecondsToUnits, unitToLong } from "../utils/timeConverter";
+import {
+  millisecondsToUnits,
+  unitToLong,
+} from "@safe-eats/helpers/timeConverter";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Text } from "react-native-paper";
 import { View } from "react-native";

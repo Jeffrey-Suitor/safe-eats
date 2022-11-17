@@ -127,21 +127,20 @@ void PostTemperatureTask(void *args) {
   char buf[MAX_REQ_LEN] = {0};
   while (true) {
     xQueuePeek(TempSensorQueue, &temp, portMAX_DELAY);
+    ESP_LOGD(TAG, "Queue temperature C: %f, F: %f", temp.c, temp.f);
     bits = xEventGroupWaitBits(DeviceStatus, WIFI_CONNECTED | DEFINED_IN_DB,
                                pdFALSE, pdTRUE, pdMS_TO_TICKS(1000));
 
     if (!(bits & (WIFI_CONNECTED | DEFINED_IN_DB))) {
-      ESP_LOGW(TAG, "WIFI: %d, DEFINED_IN_DB: %d", bits & WIFI_CONNECTED,
-               bits & DEFINED_IN_DB);
+      ESP_LOGW(TAG, "Cannot post temperature: WIFI: %d, DEFINED_IN_DB: %d",
+               bits & WIFI_CONNECTED, bits & DEFINED_IN_DB);
       continue;
     }
 
     cJSON *request_data;
     request_data = cJSON_CreateObject();
-    time_t now = time(NULL);
     cJSON_AddNumberToObject(request_data, "temperatureC", temp.c);
     cJSON_AddNumberToObject(request_data, "temperatureF", temp.f);
-    cJSON_AddNumberToObject(request_data, "timestamp", now);
     char *json_string = cJSON_Print(request_data);
     sprintf(url, "%s/appliances/%s.json", BASE_URL, ID);
     request(url, "PATCH", HTTP_METHOD_PATCH, json_string, buf);
@@ -159,7 +158,7 @@ void DefineInDatabaseTask(void *args) {
     bits = xEventGroupWaitBits(DeviceStatus, WIFI_CONNECTED, pdFALSE, pdFALSE,
                                pdMS_TO_TICKS(1000));
     if (!(bits & WIFI_CONNECTED)) {
-      ESP_LOGW(TAG, "Wifi not connected");
+      ESP_LOGW(TAG, "Cannot define in databse: WIFI %d", bits & WIFI_CONNECTED);
       continue;
     }
 
@@ -202,66 +201,77 @@ void FetchRecipeTask(void *args) {
   while (true) {
     xQueueReceive(QRCodeQueue, &qr_code, portMAX_DELAY);
     ESP_LOGD(TAG, "Received QR code: %s", qr_code);
-    bits = xEventGroupWaitBits(DeviceStatus, WIFI_CONNECTED | DEFINED_IN_DB,
-                               pdFALSE, pdTRUE, pdMS_TO_TICKS(1000));
+    // bits = xEventGroupWaitBits(DeviceStatus, WIFI_CONNECTED | DEFINED_IN_DB,
+    //                            pdFALSE, pdTRUE, pdMS_TO_TICKS(1000));
 
-    if (!(bits & (WIFI_CONNECTED | DEFINED_IN_DB))) {
-      ESP_LOGE(TAG, "Failed in recipe");
-      ESP_LOGW(TAG, "WIFI: %d, DEFINED_IN_DB: %d", bits & WIFI_CONNECTED,
-               bits & DEFINED_IN_DB);
-      continue;
-    }
+    // if (!(bits & (WIFI_CONNECTED | DEFINED_IN_DB))) {
+    //   ESP_LOGE(TAG, "Failed to fetch recipe: WIFI: %d, DEFINED_IN_DB: %d",
+    //            bits & WIFI_CONNECTED, bits & DEFINED_IN_DB);
+    //   continue;
+    // }
 
-    sprintf(url, "%s/qrCodes/%s.json?print=pretty", BASE_URL, qr_code);
-    request(url, "GET", HTTP_METHOD_GET, "", buf);
+    // sprintf(url, "%s/qrCodes/%s.json?print=pretty", BASE_URL, qr_code);
+    // request(url, "GET", HTTP_METHOD_GET, "", buf);
 
-    if (strcmp(buf, "null\n") == 0) { // TODO: Add a sound for bad qr code.
-      ESP_LOGE(TAG, "QR code not defined in database");
-      vTaskDelay(5000);
-      continue;
-    }
+    // if (strcmp(buf, "null\n") == 0) { // TODO: Add a sound for bad qr code.
+    //   ESP_LOGE(TAG, "QR code not defined in database");
+    //   vTaskDelay(5000);
+    //   continue;
+    // }
 
-    cJSON *recipe_json = cJSON_Parse(buf);
-    cJSON *str;
+    // cJSON *recipe_json = cJSON_Parse(buf);
+    // cJSON *str;
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceMode");
-    strcpy(recipe.appliance_mode, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceMode");
+    // strcpy(recipe.appliance_mode, str->valuestring);
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceTemp");
-    recipe.appliance_temp = str->valuedouble;
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceTemp");
+    // recipe.appliance_temp = str->valuedouble;
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceTempUnit");
-    strcpy(recipe.appliance_temp_unit, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceTempUnit");
+    // strcpy(recipe.appliance_temp_unit, str->valuestring);
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceType");
-    strcpy(recipe.appliance_type, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "applianceType");
+    // strcpy(recipe.appliance_type, str->valuestring);
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "description");
-    strcpy(recipe.description, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "description");
+    // strcpy(recipe.description, str->valuestring);
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "duration");
-    recipe.duration = str->valueint;
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "duration");
+    // recipe.duration = str->valueint;
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "expiryDate");
-    recipe.expiry_date = str->valueint;
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "expiryDate");
+    // recipe.expiry_date = str->valueint;
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "id");
-    strcpy(recipe.id, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "id");
+    // strcpy(recipe.id, str->valuestring);
 
-    str = cJSON_GetObjectItemCaseSensitive(recipe_json, "name");
-    strcpy(recipe.name, str->valuestring);
+    // str = cJSON_GetObjectItemCaseSensitive(recipe_json, "name");
+    // strcpy(recipe.name, str->valuestring);
+
+    Recipe recipe = {
+        .appliance_mode = "Bake",
+        .appliance_temp = 350,
+        .appliance_temp_unit = "F",
+        .appliance_type = "Toaster_Oven",
+        .description = "Bake a cake",
+        .duration = 60,
+        .expiry_date = 0,
+        .id = "123",
+        .name = "Cake",
+    };
 
     xQueueOverwrite(RecipeQueue, &recipe);
 
     ESP_LOGI(TAG, "Recipe: %s", buf);
 
-    sprintf(url, "%s/appliances/%s/qrCode.json", BASE_URL, ID);
-    request(url, "PATCH", HTTP_METHOD_PATCH, buf, buf);
+    // sprintf(url, "%s/appliances/%s/qrCode.json", BASE_URL, ID);
+    // request(url, "PATCH", HTTP_METHOD_PATCH, buf, buf);
 
     // sprintf(url, "%s/qrCodes/%s.json", BASE_URL, qr_code);
     // request(url, "DELETE", HTTP_METHOD_DELETE, buf, buf);
 
-    cJSON_Delete(recipe_json);
+    // cJSON_Delete(recipe_json);
   }
 }
 
@@ -275,8 +285,8 @@ void IsRunningTask(void *args) {
     bits = xEventGroupWaitBits(DeviceStatus, WIFI_CONNECTED | DEFINED_IN_DB,
                                pdFALSE, pdTRUE, pdMS_TO_TICKS(1000));
     if (!(bits & (WIFI_CONNECTED | DEFINED_IN_DB))) {
-      ESP_LOGW(TAG, "WIFI: %d, DEFINED_IN_DB: %d", bits & WIFI_CONNECTED,
-               bits & DEFINED_IN_DB);
+      ESP_LOGW(TAG, "Cannot notify recipe status: WIFI: %d, DEFINED_IN_DB: %d",
+               bits & WIFI_CONNECTED, bits & DEFINED_IN_DB);
       continue;
     }
     bits = xEventGroupGetBits(DeviceStatus);

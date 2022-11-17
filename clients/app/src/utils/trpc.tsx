@@ -16,7 +16,7 @@ const getBaseUrl = (serverType: "http" | "ws") => {
   if (!localhost)
     throw new Error("failed to get localhost, configure it manually");
   return serverType == "ws"
-    ? `ws://${localhost}:3001`
+    ? `ws://${localhost}:3002`
     : `http://${localhost}:3001`;
 };
 
@@ -68,13 +68,6 @@ export const TRPCProvider: React.FC<{ children: JSX.Element }> = ({
       ],
     })
   );
-
-  // if (__DEV__) {
-  //   connectToDevTools({
-  //     host: "localhost",
-  //     port: 8097,
-  //   });
-  // }
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

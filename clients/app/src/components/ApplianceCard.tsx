@@ -95,19 +95,6 @@ function ApplianceCookingTimeDial({
 }: ApplianceCookingTimeDialProps) {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const { mutate } = trpc.appliance.updateTemperature.useMutation();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      mutate({
-        id: "e689efaa-59d6-48cf-88f9-fbd346e60e76",
-        temperatureC: Math.floor(Math.random() * 100),
-        temperatureF: Math.floor(Math.random() * 100),
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
@@ -152,8 +139,21 @@ function ApplianceCard({
   navigation,
   onDelete,
 }: ApplianceCardProps) {
+  const utils = trpc.useContext();
+
   const { data: appliance, isLoading } =
     trpc.appliance.byId.useQuery(applianceId);
+
+  trpc.appliance.onStatusUpdate.useSubscription(applianceId, {
+    onData: ({ message, type }) => {
+      if (type === "cookingStart" || type === "cookingEnd") {
+        utils.appliance.byId.invalidate(applianceId);
+      }
+    },
+    onError(err) {
+      console.error("Subscription error:", err);
+    },
+  });
 
   const [applianceExpanded, setApplianceExpanded] = useState(false);
   const [recipeExpanded, setRecipeExpanded] = useState(false);

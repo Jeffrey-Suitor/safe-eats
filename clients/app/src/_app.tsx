@@ -17,7 +17,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ToastProvider } from "react-native-paper-toast";
 import { Recipe } from "@safe-eats/types/recipeTypes";
-import { capitalize } from "./utils/stringHelpers";
+import { capitalize } from "@safe-eats/helpers/stringHelpers";
 import { ModalProvider } from "./components/ModalContext";
 import { MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 import {

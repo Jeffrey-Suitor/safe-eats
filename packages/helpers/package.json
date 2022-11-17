@@ -1,0 +1,12 @@
+{
+  "name": "@safe-eats/helpers",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "zod": "^3.19.1"
+  },
+  "devDependencies": {
+    "typescript": "4.7.4"
+  }
+}

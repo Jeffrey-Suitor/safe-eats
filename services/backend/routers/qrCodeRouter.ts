@@ -2,14 +2,9 @@ import { initTRPC } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { authedProcedure, router } from "../trpc";
+import { authedProcedure, router } from "../utils/trpc";
 import { qrCodeSchema } from "@safe-eats/types/qrCodeTypes";
 import { prisma } from "@safe-eats/db";
-
-// create a global event emitter (could be replaced by redis, etc)
-const ee = new EventEmitter();
-
-const t = initTRPC.create();
 
 export const qrCodeRouter = router({
   add: authedProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
@@ -33,6 +28,9 @@ export const qrCodeRouter = router({
   getRecipe: authedProcedure
     .input(z.string().uuid())
     .query(async ({ input }) => {
-      return await prisma.qRCode.findUnique({ where: { id: input } }).recipe();
+      return await prisma.qRCode.findUnique({
+        where: { id: input },
+        include: { recipe: true },
+      });
     }),
 });

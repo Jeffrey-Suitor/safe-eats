@@ -50,3 +50,23 @@ export const millisecondsToUnits = (
   }
   return { val: seconds, unit: "Sec" };
 };
+
+export const msToHMS = (ms: number) => {
+  let s = ms / 1000;
+
+  const hours = Math.floor(s / 3600).toLocaleString("en-US", {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  });
+  s = s % 3600;
+
+  const minutes = Math.floor(s / 60).toLocaleString("en-US", {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  });
+  const seconds = Math.round(s % 60).toLocaleString("en-US", {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  });
+  return hours + ":" + minutes + ":" + s;
+};

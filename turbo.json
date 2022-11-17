@@ -14,5 +14,11 @@
     },
     "postinstall": {}
   },
-  "globalEnv": ["NODE_ENV", "TOKEN_SECRET", "SENTRY_DSN", "JWT_KEY"]
+  "globalEnv": [
+    "NODE_ENV",
+    "ACCESS_TOKEN_SECRET",
+    "SENTRY_DSN",
+    "JWT_KEY",
+    "REFRESH_TOKEN_SECRET"
+  ]
 }

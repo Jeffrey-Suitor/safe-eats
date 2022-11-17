@@ -2,14 +2,14 @@
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config({ path: "../../.env" });
 import { z } from "zod";
-import { publicProcedure, router, authedProcedure } from "../trpc";
+import { publicProcedure, router, authedProcedure } from "../utils/trpc";
 import {
   UserSchema,
   LoginInfoSchema,
   SignUpInfoSchema,
 } from "@safe-eats/types/userTypes";
 import { prisma } from "@safe-eats/db";
-import { createAccessToken } from "../jwt";
+import { createAccessToken } from "../utils/jwt";
 import bcrypt from "bcrypt";
 
 // create a global event emitter (could be replaced by redis, etc)

@@ -1,7 +1,7 @@
 import { initTRPC } from "@trpc/server";
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { authedProcedure, router } from "../trpc";
+import { authedProcedure, router } from "../utils/trpc";
 import { RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { prisma } from "@safe-eats/db";
 

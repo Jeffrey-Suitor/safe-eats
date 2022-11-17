@@ -6,7 +6,10 @@ import DeleteRecipeButton from "./DeleteRecipeButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { useState } from "react";
-import { millisecondsToUnits, unitToLong } from "../utils/timeConverter";
+import {
+  millisecondsToUnits,
+  unitToLong,
+} from "@safe-eats/helpers/timeConverter";
 import RecipeInfo from "./RecipeInfo";
 
 interface RecipeSelectCardProps {

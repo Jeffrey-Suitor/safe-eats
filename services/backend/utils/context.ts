@@ -15,16 +15,22 @@ export const createContext = async (
     | trpcNext.CreateNextContextOptions
     | NodeHTTPCreateContextFnOptions<IncomingMessage, ws>
 ) => {
+  const context = {
+    req: opts?.req,
+    res: opts?.res,
+    user: null,
+  };
   try {
     const jwt = opts?.req?.headers?.authorization?.split(" ")[1];
     const userJwt = decryptAccessToken(jwt);
     const user = UserSchema.parse(userJwt);
     return {
+      ...context,
       user,
     };
   } catch (e) {
     console.log("Failed to create context");
-    return {};
+    return context;
   }
 };
 

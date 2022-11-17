@@ -2,7 +2,7 @@ import { z } from "zod";
 import { DefinedRecipeSchema } from "./recipeTypes";
 import { applianceTypes } from "./applianceConstants";
 
-const IdSchema = z.string().uuid();
+export const IdSchema = z.string().uuid();
 
 export const TemperatureSchema = z.object({
   temperatureC: z.number(),
@@ -26,7 +26,7 @@ export const ApplianceWithoutRecipeSchema = ApplianceSchema.omit({
 });
 
 export const StatusMessageSchema = z.object({
-  type: z.enum(["cookingStart", "cookingStop", "alarm"]),
+  type: z.enum(["cookingStart", "cookingEnd", "alarm"]),
   message: z.string(),
 });
 

@@ -1,7 +1,7 @@
 /**
  * This file contains the root router of your tRPC-backend
  */
-import { router, publicProcedure, mergeRouters } from "../trpc";
+import { router, publicProcedure, mergeRouters } from "../utils/trpc";
 import { recipeRouter } from "./recipeRouter";
 import { qrCodeRouter } from "./qrCodeRouter";
 import { applianceRouter } from "./applianceRouter";

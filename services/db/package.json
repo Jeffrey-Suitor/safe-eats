@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "prisma studio --port 5556",
+    "studio": "prisma studio --port 5556",
     "db-push": "prisma db push",
     "db-seed": "prisma db seed",
     "postinstall": "prisma generate"

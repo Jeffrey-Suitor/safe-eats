@@ -14,8 +14,8 @@ import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
 import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
-import { cookingTimeUnits, expiryDateUnits,unitsToMilliseconds } from "../utils/timeConverter";
-import { capitalize } from "../utils/stringHelpers";
+import { cookingTimeUnits, expiryDateUnits,unitsToMilliseconds } from "@safe-eats/helpers/timeConverter";
+import { capitalize } from "@safe-eats/helpers/stringHelpers";
 
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);
