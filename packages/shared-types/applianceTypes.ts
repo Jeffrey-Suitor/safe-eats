@@ -16,7 +16,7 @@ export const TemperatureWithIdSchema = TemperatureSchema.extend({
 export const ApplianceSchema = TemperatureWithIdSchema.extend({
   name: z.string(),
   type: z.enum(applianceTypes),
-  cookingStartTime: z.date(),
+  cookingStartTime: z.date().nullable(),
   recipe: DefinedRecipeSchema.nullable(),
 });
 

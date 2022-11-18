@@ -16,7 +16,7 @@ const getBaseUrl = (serverType: "http" | "ws") => {
   if (!localhost)
     throw new Error("failed to get localhost, configure it manually");
   return serverType == "ws"
-    ? `ws://${localhost}:3002`
+    ? `ws://${localhost}:3001`
     : `http://${localhost}:3001`;
 };
 

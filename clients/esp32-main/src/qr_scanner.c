@@ -46,7 +46,7 @@ void SetupQRScanner(void) {
   ESP_LOGD(TAG, "QR Scanner UART Configured");
 
   QRCodeQueue = xQueueCreate(1, QR_CODE_LENGTH);
-  BaseType_t task = xTaskCreate(QRScannerTask, "uart_read_task", QR_CODE_LENGTH * 2, NULL, 6, NULL);
+  BaseType_t task = xTaskCreate(QRScannerTask, "QRScannerTask", QR_CODE_LENGTH * 2, NULL, 6, NULL);
   if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create QR scanner task");
   ESP_LOGD(TAG, "QR scanner task created");
 }

@@ -89,7 +89,7 @@ void CookingControllerTask(void *PvParams) {
 void SetupCookingController(void) {
   ESP_LOGD(TAG, "Setting up cooking controller");
   RecipeQueue = xQueueCreate(1, sizeof(Recipe));
-  BaseType_t task = xTaskCreate(CookingControllerTask, "cooking_task", 4096 * 2, NULL, 5, &CookingController);
+  BaseType_t task = xTaskCreate(CookingControllerTask, "CookingControllerTask", 4096 * 2, NULL, 5, &CookingController);
   if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create cooking controller task");
   ESP_LOGD(TAG, "Finished setting up cooking controller");
 }

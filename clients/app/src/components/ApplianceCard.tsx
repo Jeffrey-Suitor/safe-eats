@@ -22,7 +22,8 @@ interface ApplianceTemperatureDialProps {
 function ApplianceTemperatureDial({
   appliance,
 }: ApplianceTemperatureDialProps) {
-  const { temperatureC, temperatureF, id, recipe } = appliance;
+  const { temperatureC, temperatureF, id, recipe, cookingStartTime } =
+    appliance;
   const [temp, setTemp] = useState({ temperatureF, temperatureC });
 
   const utils = trpc.useContext();
@@ -41,7 +42,7 @@ function ApplianceTemperatureDial({
     temperatureUnit === "C" ? temp.temperatureC : temp.temperatureF;
 
   const strokeColorConfig =
-    recipeTemperature === undefined
+    recipeTemperature === undefined || cookingStartTime === null
       ? [
           { color: "gray", value: 0 },
           { color: "gray", value: 1 },
@@ -75,7 +76,9 @@ function ApplianceTemperatureDial({
         recipeTemperature ? recipeTemperature + 30 : applianceTemperature
       }
       title={
-        recipe == null ? undefined : `/${recipeTemperature}°${temperatureUnit}`
+        cookingStartTime == null
+          ? undefined
+          : `/${recipeTemperature}°${temperatureUnit}`
       }
       strokeColorConfig={strokeColorConfig}
       titleColor="#000000"
@@ -86,7 +89,7 @@ function ApplianceTemperatureDial({
 
 interface ApplianceCookingTimeDialProps {
   recipe: Recipe | null;
-  cookingStartTime: Date;
+  cookingStartTime: Date | null;
 }
 
 function ApplianceCookingTimeDial({
@@ -102,7 +105,7 @@ function ApplianceCookingTimeDial({
     return () => clearInterval(interval);
   }, []);
 
-  if (recipe === null) {
+  if (recipe === null || cookingStartTime === null) {
     return null;
   }
 

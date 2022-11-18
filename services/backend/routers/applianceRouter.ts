@@ -6,6 +6,7 @@ import {
   TemperatureWithIdSchema,
   StatusMessageWithIdSchema,
   StatusMessage,
+  IdSchema,
 } from "@safe-eats/types/applianceTypes";
 import { prisma } from "@safe-eats/db";
 import { router, authedProcedure, ee, publicProcedure } from "../utils/trpc";
@@ -48,7 +49,7 @@ export const applianceRouter = router({
       return appliance;
     }),
 
-  byId: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  byId: authedProcedure.input(IdSchema).query(async ({ input }) => {
     return await prisma.appliance.findUnique({
       where: { id: input },
       include: { recipe: true },
@@ -69,11 +70,9 @@ export const applianceRouter = router({
     return appliances;
   }),
 
-  delete: authedProcedure
-    .input(z.string().uuid())
-    .mutation(async ({ input }) => {
-      return await prisma.appliance.delete({ where: { id: input } });
-    }),
+  delete: authedProcedure.input(IdSchema).mutation(async ({ input }) => {
+    return await prisma.appliance.delete({ where: { id: input } });
+  }),
 
   update: authedProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
     const { recipe } = input;
@@ -92,9 +91,11 @@ export const applianceRouter = router({
   }),
 
   onTemperatureUpdate: publicProcedure
-    .input(z.string())
+    .input(IdSchema)
     .subscription(({ input: connectedApplianceId }) => {
+      console.log("onTemperatureUpdate");
       return observable<Temperature>((emit) => {
+        console.log("onTemperatureUpdate: observable");
         const listener = (val: unknown) => {
           const { id, temperatureC, temperatureF } =
             TemperatureWithIdSchema.parse(val);
@@ -123,7 +124,7 @@ export const applianceRouter = router({
     }),
 
   onStatusUpdate: publicProcedure
-    .input(z.string())
+    .input(IdSchema)
     .subscription(({ input: connectedApplianceId }) => {
       return observable<StatusMessage>((emit) => {
         const listener = (val: unknown) => {
@@ -139,18 +140,19 @@ export const applianceRouter = router({
       });
     }),
 
-  statusUpdate: publicProcedure
+  updateStatus: publicProcedure
     .input(StatusMessageWithIdSchema)
     .mutation(async ({ input }) => {
       ee.emit("statusUpdate", input);
     }),
 
   cookingStop: publicProcedure
-    .input(z.string().uuid())
+    .input(z.object({ id: IdSchema }))
     .mutation(async ({ input }) => {
       const appliance = await prisma.appliance.update({
-        where: { id: input },
+        where: { id: input.id },
         data: {
+          cookingStartTime: null,
           recipe: {
             disconnect: true,
           },
@@ -158,7 +160,7 @@ export const applianceRouter = router({
       });
 
       ee.emit("statusUpdate", {
-        id: input,
+        id: input.id,
         type: "cookingEnd",
         message: `${appliance.name} has stopped cooking`,
       });
@@ -167,7 +169,7 @@ export const applianceRouter = router({
         where: {
           appliances: {
             some: {
-              id: input,
+              id: input.id,
             },
           },
         },
@@ -184,10 +186,8 @@ export const applianceRouter = router({
       return `Users have been notified that ${appliance.name} is done cooking`;
     }),
 
-  cookingStart: publicProcedure
-    .input(
-      z.object({ applianceId: z.string().uuid(), qrCode: z.string().uuid() })
-    )
+  setRecipe: publicProcedure
+    .input(z.object({ id: IdSchema, qrCode: z.string().uuid() }))
     .mutation(async ({ input }) => {
       const recipeId = await prisma.qRCode.findUnique({
         where: { id: input.qrCode },
@@ -198,7 +198,7 @@ export const applianceRouter = router({
       }
       await prisma.qRCode.delete({ where: { id: input.qrCode } });
       const appliance = await prisma.appliance.update({
-        where: { id: input.applianceId },
+        where: { id: input.id },
         data: {
           recipe: {
             connect: {
@@ -210,20 +210,39 @@ export const applianceRouter = router({
           recipe: true,
         },
       });
+      return `Recipe ${appliance.recipe?.name} has been set for ${appliance.name}`;
+    }),
+
+  cookingStart: publicProcedure
+    .input(z.object({ id: IdSchema }))
+    .mutation(async ({ input }) => {
+      const appliance = await prisma.appliance.findUnique({
+        where: { id: input.id },
+        include: {
+          recipe: true,
+        },
+      });
 
       if (!appliance) {
         throw new Error("Appliance not found");
       }
 
       if (!appliance.recipe) {
-        throw new Error("Recipe could not be linked to appliance");
+        throw new Error("Appliance has no recipe assigned to it");
       }
+
+      await prisma.appliance.update({
+        where: { id: input.id },
+        data: {
+          cookingStartTime: new Date(),
+        },
+      });
 
       const expoPushTokensObjList = await prisma.user.findMany({
         where: {
           appliances: {
             some: {
-              id: input.applianceId,
+              id: input.id,
             },
           },
         },
@@ -233,7 +252,7 @@ export const applianceRouter = router({
       });
 
       ee.emit("statusUpdate", {
-        id: input.applianceId,
+        id: input.id,
         type: "cookingStart",
         message: `${appliance.name} is cooking ${appliance.recipe.name}`,
       });

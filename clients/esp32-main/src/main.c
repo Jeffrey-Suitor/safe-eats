@@ -1,5 +1,6 @@
 #include <driver/gpio.h>
 #include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 #include <stdio.h>
 
 #include "buzzer.h"
@@ -17,6 +18,7 @@
 #include "websocket.h"
 #include "wifi.h"
 
+QueueHandle_t StatusMessageQueue;
 EventGroupHandle_t DeviceStatus;
 char ID[64];
 char APPLIANCE_TYPE[64];
@@ -44,6 +46,8 @@ void app_main() {
   sntp_setservername(0, "pool.ntp.org");
   sntp_init();
   ESP_LOGD(TAG, "Time synced setup");
+
+  StatusMessageQueue = xQueueCreate(3, sizeof(StatusMessage));
 
   SetupWifi();
   SetupWebsocket();

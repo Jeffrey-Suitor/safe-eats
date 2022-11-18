@@ -60,7 +60,7 @@ model Appliance {
   updatedAt        DateTime      @updatedAt
   temperatureC     Int
   temperatureF     Int
-  cookingStartTime DateTime
+  cookingStartTime DateTime?
   recipe           Recipe?       @relation(fields: [recipeId], references: [id], onDelete: SetNull)
   recipeId         String?
   users            User[]

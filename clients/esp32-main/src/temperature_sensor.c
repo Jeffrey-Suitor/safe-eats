@@ -1,13 +1,13 @@
 #include "temperature_sensor.h"
 
 #include <driver/spi_master.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 #include <math.h>
 
 #include "config.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
 
 #define TAG "TEMPERATURE_SENSOR"
 
@@ -41,12 +41,16 @@ float TempSensorRead() {
 
 void TempSensorTask(void *pvParams) {
   Temperature temp;
+  EventBits_t bits;
   while (true) {
     temp.c = TempSensorRead();
     temp.f = roundf(temp.c * 1.8 + 32.0);
-    ESP_LOGI(TAG, "C: %f, F: %f", temp.c, temp.f);
+    ESP_LOGI(TAG, "C: %d, F: %d", temp.c, temp.f);
     xQueueOverwrite(TempSensorQueue, &temp);
-    vTaskDelay(pdMS_TO_TICKS(1000));  // 1 second delay
+    bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdTRUE, pdMS_TO_TICKS(30000));
+    if (bits & IS_COOKING) {
+      vTaskDelay(pdMS_TO_TICKS(1000));
+    }
   }
 }
 
@@ -63,7 +67,6 @@ void SetupTempSensor(void) {
 
   ESP_ERROR_CHECK(spi_bus_initialize(VSPI_HOST, &busCfg, SPI_DMA_CH_AUTO));
 
-  // Temp sensor must be first
   spi_device_interface_config_t temp_sensor_cfg = {
       .mode = 0,
       .clock_speed_hz = 2 * 1000 * 1000,
