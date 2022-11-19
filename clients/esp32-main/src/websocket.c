@@ -8,6 +8,7 @@
 #include "cJSON.h"
 #include "config.h"
 #include "cooking_controller.h"
+#include "db_manager.h"
 #include "esp_crt_bundle.h"
 #include "esp_event.h"
 #include "esp_http_client.h"
@@ -36,9 +37,6 @@ TaskHandle_t Websocket;
 
 static void shutdown_signaler(TimerHandle_t xTimer) {
   EventBits_t bits = xEventGroupGetBits(DeviceStatus);
-
-  ESP_LOGI(TAG, "Shutting down: %d", bits & WEBSOCKET_READY);
-
   if (!(bits & WEBSOCKET_READY)) {
     return;
   }
@@ -61,7 +59,7 @@ static void start_signaler(TimerHandle_t xTimer) {
     return;
   }
 
-  ESP_LOGI(TAG, "Messages waiting in queue, restarting websocket");
+  ESP_LOGI(TAG, "%d messages waiting in queue, restarting websocket", msgCount);
   esp_websocket_client_start(CLIENT);
   xTimerStart(SHUTDOWN_TIMER, 0);
   xTimerStop(START_TIMER, 0);
@@ -71,24 +69,53 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
   esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
   switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
-      ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+      ESP_LOGD(TAG, "WEBSOCKET_EVENT_CONNECTED");
       xEventGroupSetBits(DeviceStatus, WEBSOCKET_READY);
       break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-      ESP_LOGE(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+      ESP_LOGD(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
       break;
     case WEBSOCKET_EVENT_DATA:
 
       // Pong frame received
       if (data->op_code == 10) {
-        return;
+        break;
       }
 
-      ESP_LOGI(TAG, "WEBSOCKET_EVENT_DATA");
-      ESP_LOGI(TAG, "Received opcode=%d", data->op_code);
-      ESP_LOGW(TAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
-      ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len,
-               data->payload_offset);
+      ESP_LOGD(TAG, "WEBSOCKET_EVENT_DATA");
+
+      cJSON *json = cJSON_ParseWithLength(data->data_ptr, data->data_len);
+      if (json == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) {
+          ESP_LOGE(TAG, "Error before: %s", error_ptr);
+        }
+        break;
+      }
+
+      char *messageId = cJSON_GetObjectItemCaseSensitive(json, "id")->valuestring;
+      char *messageIdCopy = malloc(strlen(messageId) + 1);
+      strcpy(messageIdCopy, messageId);
+
+      char *requestId = strtok(messageIdCopy, "::");
+      requestId = strtok(NULL, "::");
+      ESP_LOGI(TAG, "Request ID: %s", requestId);
+
+      if (strcmp(requestId, "appliance.setRecipe") == 0) {
+        JSONString json = {
+            .string = (char *)data->data_ptr,
+            .length = data->data_len,
+        };
+        xQueueOverwrite(DecodeRecipeQueue, &json);
+        ESP_LOGE(TAG, "Recipe sent");
+      }
+
+      free(messageIdCopy);
+
+      // char *string = cJSON_Print(json);
+      // ESP_LOGD(TAG, "Received JSON: %s", string);
+      // cJSON_free(string);
+      cJSON_Delete(json);
 
       xTimerReset(SHUTDOWN_TIMER, portMAX_DELAY);
       break;
@@ -100,7 +127,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 void WebsocketTask(void *pvParameters) {
   esp_websocket_client_config_t websocket_cfg = {
-      .uri = "ws://10.0.0.154",
+      .uri = "ws://10.0.0.146",
       .port = 3001,
   };
   ESP_LOGI(TAG, "Connecting to %s:%d", websocket_cfg.uri, websocket_cfg.port);
@@ -165,7 +192,7 @@ void SetupWebsocket() {
     ESP_LOGE(TAG, "Failed to create WebsocketQueue");
   }
 
-  xTaskCreate(WebsocketTask, "WebsocketTask", 4096, NULL, 1, &Websocket);
+  xTaskCreate(WebsocketTask, "WebsocketTask", 4096 * 3, NULL, 1, &Websocket);
 
   SHUTDOWN_TIMER = xTimerCreate("Websocket shutdown timer", WEBSOCKET_TIMEOUT * 1000 / portTICK_PERIOD_MS, pdTRUE, NULL, shutdown_signaler);
   START_TIMER = xTimerCreate("Websocket start timer", 1000 / portTICK_PERIOD_MS, pdTRUE, NULL, start_signaler);

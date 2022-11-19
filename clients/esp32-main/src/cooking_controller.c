@@ -33,7 +33,7 @@ void CookingControllerTask(void *PvParams) {
       vTaskDelay(1000);
       start_time = time(NULL);
     }
-    ESP_LOGI(TAG, "Beginning to cook %s", recipe.name);
+    ESP_LOGI(TAG, "Beginning to cook %s", recipe.id);
     xQueueSend(BuzzerQueue, (void *)&MealStarted, 100);
     xEventGroupSetBits(DeviceStatus, IS_COOKING);
     xEventGroupSetBits(RelayControllerFlags, INDICATOR_LIGHT);

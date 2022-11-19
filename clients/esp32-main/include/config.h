@@ -38,17 +38,4 @@ extern char APPLIANCE_TYPE[64];
 #define IS_COOKING BIT4
 
 extern EventGroupHandle_t DeviceStatus;
-
-typedef struct Recipe {
-  char appliance_mode[64];
-  double appliance_temp;
-  char appliance_temp_unit[64];
-  char appliance_type[64];
-  char description[1024];
-  time_t duration;
-  time_t expiry_date;
-  char id[1024];
-  char name[64];
-} Recipe;
-
 #endif

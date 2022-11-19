@@ -66,6 +66,9 @@ export const applianceRouter = router({
         },
       },
       include: { recipe: true },
+      orderBy: {
+        name: "asc",
+      },
     });
     return appliances;
   }),
@@ -210,7 +213,7 @@ export const applianceRouter = router({
           recipe: true,
         },
       });
-      return `Recipe ${appliance.recipe?.name} has been set for ${appliance.name}`;
+      return appliance.recipe;
     }),
 
   cookingStart: publicProcedure

@@ -50,9 +50,9 @@ void app_main() {
   StatusMessageQueue = xQueueCreate(3, sizeof(StatusMessage));
 
   SetupWifi();
-  SetupWebsocket();
   SetupTempSensor();
-  // SetupQRScanner();
+  SetupQRScanner();
+  SetupWebsocket();
   // SetupRelayController();
   // SetupBuzzer();
   // SetupCookingController();

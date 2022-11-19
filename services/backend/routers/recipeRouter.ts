@@ -29,6 +29,9 @@ export const recipeRouter = router({
           },
         },
       },
+      orderBy: {
+        name: "asc",
+      },
     });
   }),
 
