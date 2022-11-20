@@ -11,7 +11,7 @@ export type NavigationProps = NativeStackScreenProps<
 >;
 
 function ModifyAppliancePage({ navigation, route }: NavigationProps) {
-  const { data: appliance, isLoading } = trpc.appliance.byId.useQuery(
+  const { data: appliance, isLoading } = trpc.appliance.get.useQuery(
     route.params.applianceId
   );
   console.log(appliance);

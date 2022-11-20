@@ -53,8 +53,8 @@ void app_main() {
   SetupTempSensor();
   SetupQRScanner();
   SetupWebsocket();
-  // SetupRelayController();
-  // SetupBuzzer();
-  // SetupCookingController();
+  SetupRelayController();
+  SetupBuzzer();
+  SetupCookingController();
   SetupDBManager();
 }

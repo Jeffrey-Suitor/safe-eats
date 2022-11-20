@@ -11,9 +11,4 @@ typedef struct StatusMessage {
   char *message;
 } StatusMessage;
 
-typedef struct JSONString {
-  char *string;
-  int length;
-} JSONString;
-
 #endif

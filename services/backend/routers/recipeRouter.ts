@@ -35,7 +35,7 @@ export const recipeRouter = router({
     });
   }),
 
-  byId: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.recipe.findUniqueOrThrow({
       where: {
         id: input,

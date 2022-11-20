@@ -55,7 +55,7 @@ void BuzzerTask(void *pvParameters) {
   while (true) {
     ESP_LOGI(TAG, "Received note with duration %d and freq %d", note.duration, note.freq);
     xQueueReceive(BuzzerQueue, &note, portMAX_DELAY);
-    sound(note.freq, note.duration, note.repeats);
+    // sound(note.freq, note.duration, note.repeats);
   }
 }
 

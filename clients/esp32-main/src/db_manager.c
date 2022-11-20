@@ -22,18 +22,26 @@
 
 QueueHandle_t DecodeRecipeQueue;
 
+void createDataString(JSONString *jsonString, cJSON *data) {
+  char *dataString = cJSON_Print(data);
+  strcpy(jsonString->string, dataString);
+  jsonString->length = strlen(dataString);
+  cJSON_free(dataString);
+}
+
 void PostTemperatureTask(void *args) {
   Temperature temp;
   cJSON *data = cJSON_CreateObject();
   cJSON_AddNumberToObject(data, "temperatureC", 0);
   cJSON_AddNumberToObject(data, "temperatureF", 0);
   cJSON_AddStringToObject(data, "id", ID);
-
+  WebSocketMessage msg = {.method = "mutation", .path = "appliance.updateTemperature"};
   while (true) {
     xQueueReceive(TempSensorQueue, &temp, portMAX_DELAY);
     cJSON_ReplaceItemInObjectCaseSensitive(data, "temperatureC", cJSON_CreateNumber(temp.c));
     cJSON_ReplaceItemInObjectCaseSensitive(data, "temperatureF", cJSON_CreateNumber(temp.f));
-    WebSocketMessage msg = {.method = "mutation", .path = "appliance.updateTemperature", .data = data};
+    createDataString(&msg.dataString, data);
+    ESP_LOGV(TAG, "Sending temperature data: %s", msg.dataString.string);
     xQueueSend(WebsocketQueue, &msg, portMAX_DELAY);
   }
   cJSON_Delete(data);
@@ -44,13 +52,15 @@ void UpdateStatusTask(void *args) {
   cJSON_AddStringToObject(data, "id", ID);
   cJSON_AddStringToObject(data, "type", "unknown");
   cJSON_AddStringToObject(data, "message", "unknown");
-  StatusMessage msg;
+  WebSocketMessage msg = {.method = "mutation", .path = "appliance.updateStatus"};
+  StatusMessage status;
 
   while (true) {
-    xQueueReceive(StatusMessageQueue, &msg, portMAX_DELAY);
-    cJSON_ReplaceItemInObjectCaseSensitive(data, "type", cJSON_CreateString(msg.type));
-    cJSON_ReplaceItemInObjectCaseSensitive(data, "message", cJSON_CreateString(msg.message));
-    WebSocketMessage msg = {.method = "mutation", .path = "appliance.updateStatus", .data = data};
+    xQueueReceive(StatusMessageQueue, &status, portMAX_DELAY);
+    cJSON_ReplaceItemInObjectCaseSensitive(data, "type", cJSON_CreateString(status.type));
+    cJSON_ReplaceItemInObjectCaseSensitive(data, "message", cJSON_CreateString(status.message));
+    createDataString(&msg.dataString, data);
+    ESP_LOGV(TAG, "Sending status update: %s", msg.dataString.string);
     xQueueSend(WebsocketQueue, &msg, portMAX_DELAY);
   }
   cJSON_Delete(data);
@@ -60,11 +70,14 @@ void SetQRCodeTask(void *args) {
   cJSON *data = cJSON_CreateObject();
   cJSON_AddStringToObject(data, "id", ID);
   cJSON_AddStringToObject(data, "qrCode", "unknown");
-  char qrCode[QR_CODE_LENGTH];
+  char qrCode[QR_CODE_LENGTH] = "";
+  WebSocketMessage msg = {.method = "mutation", .path = "appliance.setRecipe"};
+
   while (true) {
-    xQueueReceive(QRCodeQueue, qrCode, portMAX_DELAY);
+    xQueueReceive(QRCodeQueue, &qrCode, portMAX_DELAY);
     cJSON_ReplaceItemInObjectCaseSensitive(data, "qrCode", cJSON_CreateString(qrCode));
-    WebSocketMessage msg = {.method = "mutation", .path = "appliance.setRecipe", .data = data};
+    createDataString(&msg.dataString, data);
+    ESP_LOGV(TAG, "Sending QR Code: %s", qrCode);
     xQueueSend(WebsocketQueue, &msg, portMAX_DELAY);
   }
   cJSON_Delete(data);
@@ -76,14 +89,16 @@ void MonitorCookingStatusTask(void *args) {
   EventBits_t bits;
   bool cookingStatus = false;
   bool newestCookingStatus = false;
-  WebSocketMessage msg = {.method = "mutation", .data = data};
 
+  WebSocketMessage msg = {.method = "mutation"};
+  createDataString(&msg.dataString, data);
   while (true) {
     bits = xEventGroupGetBits(DeviceStatus);
     newestCookingStatus = bits & IS_COOKING;
     if (cookingStatus != newestCookingStatus) {
       cookingStatus = newestCookingStatus;
-      strcpy(msg.path, cookingStatus ? "appliance.startCooking" : "appliance.stopCooking");
+      strcpy(msg.path, cookingStatus ? "appliance.cookingStart" : "appliance.cookingStop");
+      ESP_LOGV(TAG, "Setting cooking status to %s", cookingStatus ? "true" : "false");
       xQueueSend(WebsocketQueue, &msg, portMAX_DELAY);
     } else {
       vTaskDelay(pdMS_TO_TICKS(1000));
@@ -93,72 +108,65 @@ void MonitorCookingStatusTask(void *args) {
 }
 
 void SetRecipeTask(void *args) {
-  JSONString jsonString = {.string = NULL, .length = 0};
+  JSONString jsonString;
   Recipe recipe;
   const cJSON *result = NULL;
   const cJSON *data = NULL;
   const cJSON *recipeJson = NULL;
-  const cJSON *appliance_mode = NULL;
-  const cJSON *appliance_temp = NULL;
-  const cJSON *appliance_temp_unit = NULL;
-  const cJSON *appliance_type = NULL;
-  const cJSON *duration = NULL;
-  const cJSON *expiry_date = NULL;
+  const cJSON *applianceMode = NULL;
+  const cJSON *temperature = NULL;
+  const cJSON *temperatureUnit = NULL;
+  const cJSON *applianceType = NULL;
+  const cJSON *cookingTime = NULL;
+  const cJSON *expiryDate = NULL;
   const cJSON *id = NULL;
 
   while (true) {
     xQueueReceive(DecodeRecipeQueue, &jsonString, portMAX_DELAY);
     cJSON *json = cJSON_ParseWithLength(jsonString.string, jsonString.length);
 
-    char *string = cJSON_Print(json);
-    ESP_LOGW(TAG, "Received JSON: %s", string);
-    cJSON_free(string);
-
     result = cJSON_GetObjectItemCaseSensitive(json, "result");
     data = cJSON_GetObjectItemCaseSensitive(result, "data");
     recipeJson = cJSON_GetObjectItemCaseSensitive(data, "json");
 
-    char *string = cJSON_Print(recipeJson);
-    ESP_LOGW(TAG, "Received JSON: %s", string);
-    cJSON_free(string);
+    applianceMode = cJSON_GetObjectItemCaseSensitive(recipeJson, "applianceMode");
+    strcpy(recipe.applianceMode, applianceMode->valuestring);
+    ESP_LOGV(TAG, "applianceMode: %s", recipe.applianceMode);
 
-    appliance_mode = cJSON_GetObjectItemCaseSensitive(recipeJson, "appliance_mode");
-    strcpy(recipe.appliance_mode, appliance_mode->valuestring);
-    ESP_LOGE(TAG, "appliance_mode: %s", recipe.appliance_mode);
+    temperature = cJSON_GetObjectItemCaseSensitive(recipeJson, "temperature");
+    recipe.temperature = temperature->valuedouble;
+    ESP_LOGV(TAG, "temperature: %d", recipe.temperature);
 
-    appliance_temp = cJSON_GetObjectItemCaseSensitive(recipeJson, "appliance_temp");
-    recipe.appliance_temp = appliance_temp->valuedouble;
-    ESP_LOGE(TAG, "appliance_temp: %d", recipe.appliance_temp);
+    temperatureUnit = cJSON_GetObjectItemCaseSensitive(recipeJson, "temperatureUnit");
+    strcpy(recipe.temperatureUnit, temperatureUnit->valuestring);
+    ESP_LOGV(TAG, "temperatureUnit: %s", recipe.temperatureUnit);
 
-    appliance_temp_unit = cJSON_GetObjectItemCaseSensitive(recipeJson, "appliance_temp_unit");
-    strcpy(recipe.appliance_temp_unit, appliance_temp_unit->valuestring);
-    ESP_LOGE(TAG, "appliance_temp_unit: %s", recipe.appliance_temp_unit);
+    applianceType = cJSON_GetObjectItemCaseSensitive(recipeJson, "applianceType");
+    strcpy(recipe.applianceType, applianceType->valuestring);
+    ESP_LOGV(TAG, "applianceType: %s", recipe.applianceType);
 
-    appliance_type = cJSON_GetObjectItemCaseSensitive(recipeJson, "appliance_type");
-    strcpy(recipe.appliance_type, appliance_type->valuestring);
-    ESP_LOGE(TAG, "appliance_type: %s", recipe.appliance_type);
+    cookingTime = cJSON_GetObjectItemCaseSensitive(recipeJson, "cookingTime");
+    recipe.cookingTime = cookingTime->valuedouble;
+    ESP_LOGV(TAG, "cookingTime: %f", recipe.cookingTime);
 
-    duration = cJSON_GetObjectItemCaseSensitive(recipeJson, "duration");
-    recipe.duration = duration->valuedouble;
-    ESP_LOGE(TAG, "duration: %f", recipe.duration);
-
-    expiry_date = cJSON_GetObjectItemCaseSensitive(recipeJson, "expiry_date");
-    recipe.expiry_date = expiry_date->valuedouble;
-    ESP_LOGE(TAG, "expiry_date: %f", recipe.expiry_date);
+    expiryDate = cJSON_GetObjectItemCaseSensitive(recipeJson, "expiryDate");
+    recipe.expiryDate = expiryDate->valuedouble;
+    ESP_LOGV(TAG, "expiryDate: %f", recipe.expiryDate);
 
     id = cJSON_GetObjectItemCaseSensitive(recipeJson, "id");
     strcpy(recipe.id, id->valuestring);
-    ESP_LOGE(TAG, "id: %s", recipe.id);
+    ESP_LOGV(TAG, "id: %s", recipe.id);
 
+    xQueueSend(RecipeQueue, &recipe, portMAX_DELAY);
     cJSON_Delete(json);
   }
 }
 
 void SetupDBManager(void) {
   DecodeRecipeQueue = xQueueCreate(1, sizeof(JSONString));
-  xTaskCreate(PostTemperatureTask, "PostTemperatureTask", 2048, NULL, 3, NULL);
-  xTaskCreate(UpdateStatusTask, "UpdateStatusTask", 2048, NULL, 2, NULL);
-  xTaskCreate(SetQRCodeTask, "SetQRCodeTask", 4096, NULL, 2, NULL);
-  xTaskCreate(MonitorCookingStatusTask, "MonitorCookingStatusTask", 4096, NULL, 2, NULL);
-  xTaskCreate(SetRecipeTask, "SetRecipeTask", 4096, NULL, 2, NULL);
+  xTaskCreate(PostTemperatureTask, "PostTemperatureTask", 4096, NULL, 2, NULL);
+  xTaskCreate(UpdateStatusTask, "UpdateStatusTask", 4096, NULL, 3, NULL);
+  xTaskCreate(SetQRCodeTask, "SetQRCodeTask", 4096, NULL, 1, NULL);
+  xTaskCreate(MonitorCookingStatusTask, "MonitorCookingStatusTask", 4096, NULL, 3, NULL);
+  xTaskCreate(SetRecipeTask, "SetRecipeTask", 4096, NULL, 1, NULL);
 }

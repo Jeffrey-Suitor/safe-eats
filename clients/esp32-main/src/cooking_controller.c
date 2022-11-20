@@ -13,7 +13,7 @@
 #include "relay_controller.h"
 #include "temperature_sensor.h"
 #include "time.h"
-#define TAG "CookingController"
+#define TAG "COOKING_CONTROLLER"
 
 TaskHandle_t CookingController;
 QueueHandle_t RecipeQueue;
@@ -27,27 +27,28 @@ void CookingControllerTask(void *PvParams) {
   int count = 0;
   while (true) {
     xQueueReceive(RecipeQueue, &recipe, portMAX_DELAY);
-    time_t start_time = time(NULL);
-    while ((long long)start_time < 30000) {
+    time_t startTime = time(NULL);
+    while ((long long)startTime < 30000) {
       ESP_LOGW(TAG, "Time not yet synced. Waiting");
       vTaskDelay(1000);
-      start_time = time(NULL);
+      startTime = time(NULL);
     }
-    ESP_LOGI(TAG, "Beginning to cook %s", recipe.id);
     xQueueSend(BuzzerQueue, (void *)&MealStarted, 100);
     xEventGroupSetBits(DeviceStatus, IS_COOKING);
     xEventGroupSetBits(RelayControllerFlags, INDICATOR_LIGHT);
 
     heat_element_mask = TOP_HEATING_ELEMENT | BOTTOM_HEATING_ELEMENT;
-    if (strcmp(recipe.appliance_mode, "Broil") == 0) {
+    if (strcmp(recipe.applianceMode, "Broil") == 0) {
       heat_element_mask = TOP_HEATING_ELEMENT;
-    } else if (strcmp(recipe.appliance_mode, "Convection") == 0) {
+    } else if (strcmp(recipe.applianceMode, "Convection") == 0) {
       xEventGroupSetBits(RelayControllerFlags, CONVECTION_FAN);
-    } else if (strcmp(recipe.appliance_mode, "Rotisserie") == 0) {
+    } else if (strcmp(recipe.applianceMode, "Rotisserie") == 0) {
       xEventGroupSetBits(RelayControllerFlags, ROTISERRIE);
     }
 
-    while ((time(NULL) - start_time) < recipe.duration) {
+    ESP_LOGV("Appliance mode", "%s", recipe.applianceMode);
+
+    while ((time(NULL) - startTime) < recipe.cookingTime) {
       if (!xQueuePeek(TempSensorQueue, &temp_reading, pdMS_TO_TICKS(1000))) {
         count++;
         if (count > 10) {
@@ -58,10 +59,10 @@ void CookingControllerTask(void *PvParams) {
         count = 0;
       }
 
-      temperature = strcmp(recipe.appliance_temp_unit, "C") == 0 ? temp_reading.c : temp_reading.f;
-      if (abs(temperature - recipe.appliance_temp) < 5) {
+      temperature = strcmp(recipe.temperatureUnit, "C") == 0 ? temp_reading.c : temp_reading.f;
+      if (abs(temperature - recipe.temperature) < 5) {
         continue;
-      } else if (temperature < recipe.appliance_temp) {
+      } else if (temperature < recipe.temperature) {
         xEventGroupSetBits(RelayControllerFlags, heat_element_mask);
       } else {
         xEventGroupClearBits(RelayControllerFlags, heat_element_mask);

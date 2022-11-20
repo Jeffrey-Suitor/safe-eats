@@ -47,7 +47,7 @@ void TempSensorTask(void *pvParams) {
     temp.f = roundf(temp.c * 1.8 + 32.0);
     ESP_LOGI(TAG, "C: %d, F: %d", temp.c, temp.f);
     xQueueOverwrite(TempSensorQueue, &temp);
-    bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdTRUE, pdMS_TO_TICKS(30000));
+    bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdFALSE, pdMS_TO_TICKS(30000));
     if (bits & IS_COOKING) {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -82,7 +82,7 @@ void SetupTempSensor(void) {
     ESP_LOGE(TAG, "Failed to create temperature sensor queue");
   }
 
-  BaseType_t task = xTaskCreate(TempSensorTask, "TemperatureTask", 4096, NULL, 3, &TempSensor);
+  BaseType_t task = xTaskCreate(TempSensorTask, "TemperatureTask", 2048, NULL, 4, &TempSensor);
   if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create temperature sensor task");
   ESP_LOGD(TAG, "Temperature sensor setup complete");
 }

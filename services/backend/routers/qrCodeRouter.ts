@@ -11,7 +11,7 @@ export const qrCodeRouter = router({
     return await prisma.qRCode.create({ data: input });
   }),
 
-  byId: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
+  get: authedProcedure.input(z.string().uuid()).query(async ({ input }) => {
     return await prisma.qRCode.findUnique({ where: { id: input } });
   }),
 
@@ -24,13 +24,4 @@ export const qrCodeRouter = router({
   update: authedProcedure.input(qrCodeSchema).mutation(async ({ input }) => {
     return await prisma.qRCode.update({ where: { id: input.id }, data: input });
   }),
-
-  getRecipe: authedProcedure
-    .input(z.string().uuid())
-    .query(async ({ input }) => {
-      return await prisma.qRCode.findUnique({
-        where: { id: input },
-        include: { recipe: true },
-      });
-    }),
 });

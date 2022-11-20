@@ -59,7 +59,7 @@ static void start_signaler(TimerHandle_t xTimer) {
     return;
   }
 
-  ESP_LOGI(TAG, "%d messages waiting in queue, restarting websocket", msgCount);
+  ESP_LOGI(TAG, "Message waiting in queue, restarting websocket");
   esp_websocket_client_start(CLIENT);
   xTimerStart(SHUTDOWN_TIMER, 0);
   xTimerStop(START_TIMER, 0);
@@ -74,6 +74,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
       break;
     case WEBSOCKET_EVENT_DISCONNECTED:
       ESP_LOGD(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+      xEventGroupClearBits(DeviceStatus, WEBSOCKET_READY);
       break;
     case WEBSOCKET_EVENT_DATA:
 
@@ -90,33 +91,33 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         if (error_ptr != NULL) {
           ESP_LOGE(TAG, "Error before: %s", error_ptr);
         }
+        cJSON_Delete(json);
         break;
       }
 
-      char *messageId = cJSON_GetObjectItemCaseSensitive(json, "id")->valuestring;
-      char *messageIdCopy = malloc(strlen(messageId) + 1);
-      strcpy(messageIdCopy, messageId);
+      cJSON *error = cJSON_GetObjectItemCaseSensitive(json, "error");
+      if (cJSON_IsObject(error)) {
+        char *errorJson = cJSON_Print(error);
+        ESP_LOGE(TAG, "Error: %s", errorJson);
+        cJSON_free(errorJson);
+        cJSON_Delete(json);
+        break;
+      }
 
-      char *requestId = strtok(messageIdCopy, "::");
+      char *requestId = cJSON_GetObjectItemCaseSensitive(json, "id")->valuestring;
+      requestId = strtok(requestId, "::");
       requestId = strtok(NULL, "::");
       ESP_LOGI(TAG, "Request ID: %s", requestId);
 
       if (strcmp(requestId, "appliance.setRecipe") == 0) {
-        JSONString json = {
-            .string = (char *)data->data_ptr,
-            .length = data->data_len,
-        };
+        JSONString json;
+        json.length = data->data_len;
+        strncpy(json.string, data->data_ptr, data->data_len);
         xQueueOverwrite(DecodeRecipeQueue, &json);
         ESP_LOGE(TAG, "Recipe sent");
       }
 
-      free(messageIdCopy);
-
-      // char *string = cJSON_Print(json);
-      // ESP_LOGD(TAG, "Received JSON: %s", string);
-      // cJSON_free(string);
       cJSON_Delete(json);
-
       xTimerReset(SHUTDOWN_TIMER, portMAX_DELAY);
       break;
     case WEBSOCKET_EVENT_ERROR:
@@ -163,21 +164,20 @@ void WebsocketTask(void *pvParameters) {
   char id[256] = "";
 
   while (true) {
-    xQueuePeek(WebsocketQueue, &msg, portMAX_DELAY);
     xEventGroupWaitBits(DeviceStatus, WEBSOCKET_READY, pdFALSE, pdTRUE, portMAX_DELAY);
     xQueueReceive(WebsocketQueue, &msg, portMAX_DELAY);  // Guaranteed to have an item
-
     sprintf(id, "%s::%s", ID, msg.path);
     cJSON_ReplaceItemInObjectCaseSensitive(output, "id", cJSON_CreateString(id));
     cJSON_ReplaceItemInObjectCaseSensitive(output, "method", cJSON_CreateString(msg.method));
     cJSON_ReplaceItemInObjectCaseSensitive(params, "path", cJSON_CreateString(msg.path));
-    cJSON_ReplaceItemInObjectCaseSensitive(input, "json", msg.data);
+
+    cJSON *data = cJSON_ParseWithLength(msg.dataString.string, msg.dataString.length);
+    cJSON_ReplaceItemInObjectCaseSensitive(input, "json", data);
 
     char *json_str = cJSON_Print(output);
     int len = strlen(json_str);
     int sent = esp_websocket_client_send_text(CLIENT, json_str, len, portMAX_DELAY);
-    ESP_LOGI(TAG, "SENT method: %s path: %s bytes: %d", msg.method, msg.path, sent);
-    ESP_LOGD(TAG, "data: %s", json_str);
+    ESP_LOGI(TAG, "%s --> %s = %d bytes", msg.method, msg.path, sent);
     cJSON_free(json_str);
   }
   cJSON_Delete(output);
@@ -192,9 +192,9 @@ void SetupWebsocket() {
     ESP_LOGE(TAG, "Failed to create WebsocketQueue");
   }
 
-  xTaskCreate(WebsocketTask, "WebsocketTask", 4096 * 3, NULL, 1, &Websocket);
+  xTaskCreate(WebsocketTask, "WebsocketTask", 4096 * 3, NULL, 3, &Websocket);
 
-  SHUTDOWN_TIMER = xTimerCreate("Websocket shutdown timer", WEBSOCKET_TIMEOUT * 1000 / portTICK_PERIOD_MS, pdTRUE, NULL, shutdown_signaler);
-  START_TIMER = xTimerCreate("Websocket start timer", 1000 / portTICK_PERIOD_MS, pdTRUE, NULL, start_signaler);
+  SHUTDOWN_TIMER = xTimerCreate("Websocket shutdown timer", pdMS_TO_TICKS(WEBSOCKET_TIMEOUT * 1000), pdTRUE, NULL, shutdown_signaler);
+  START_TIMER = xTimerCreate("Websocket start timer", pdMS_TO_TICKS(1000), pdTRUE, NULL, start_signaler);
   xTimerStart(START_TIMER, portMAX_DELAY);
 }

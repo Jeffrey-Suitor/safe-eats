@@ -34,7 +34,6 @@ const seedAppliances = async () => {
       type: "Toaster_Oven",
       temperatureC: 200,
       temperatureF: 400,
-      cookingStartTime: new Date().toISOString(),
       users: {
         connect: {
           id: "f62bc609-63d2-47dd-af75-e425d8e82c0a",

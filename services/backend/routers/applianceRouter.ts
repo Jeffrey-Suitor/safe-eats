@@ -49,7 +49,7 @@ export const applianceRouter = router({
       return appliance;
     }),
 
-  byId: authedProcedure.input(IdSchema).query(async ({ input }) => {
+  get: authedProcedure.input(IdSchema).query(async ({ input }) => {
     return await prisma.appliance.findUnique({
       where: { id: input },
       include: { recipe: true },
@@ -192,20 +192,19 @@ export const applianceRouter = router({
   setRecipe: publicProcedure
     .input(z.object({ id: IdSchema, qrCode: z.string().uuid() }))
     .mutation(async ({ input }) => {
-      const recipeId = await prisma.qRCode.findUnique({
+      const qrCode = await prisma.qRCode.findUnique({
         where: { id: input.qrCode },
-        select: { recipeId: true },
       });
-      if (!recipeId) {
+      if (!qrCode) {
         throw new Error("Invalid QR Code");
       }
-      await prisma.qRCode.delete({ where: { id: input.qrCode } });
+      // await prisma.qRCode.delete({ where: { id: input.qrCode } });
       const appliance = await prisma.appliance.update({
         where: { id: input.id },
         data: {
           recipe: {
             connect: {
-              id: recipeId.recipeId,
+              id: qrCode.recipeId,
             },
           },
         },
@@ -213,6 +212,24 @@ export const applianceRouter = router({
           recipe: true,
         },
       });
+
+      if (!appliance || !appliance.recipe) {
+        throw new Error("Invalid Appliance");
+      }
+
+      appliance.recipe.expiryDate += qrCode.createdAt.getTime();
+
+      if (appliance.recipe.expiryDate < Date.now()) {
+        console.log("Recipe has expired");
+        const emitVal = {
+          id: input.id,
+          type: "alarm",
+          message: `${appliance.recipe.name} is expired`,
+        };
+        ee.emit("statusUpdate", emitVal);
+        // throw new Error("Recipe has expired");
+      }
+
       return appliance.recipe;
     }),
 

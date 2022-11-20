@@ -9,7 +9,7 @@
 #include "hal/gpio_types.h"
 #include "helpers.h"
 
-#define TAG "CONTROLLER"
+#define TAG "RELAY_CONTROLLER"
 
 TaskHandle_t RelayController;
 EventGroupHandle_t RelayControllerFlags;
@@ -25,10 +25,14 @@ void RelayControllerTask(void *PvParams) {
   while (true) {
     bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
 
+    // When emergency stop
     if (bits & EMERGENCY_STOP) {
-      for (i = 0; i <= length; i++) {
-        gpio_set_level(RelayDevices[i], 1);
+      for (i = 0; i < length; i++) {
+        ESP_LOGV(TAG, "EMERGENCY STOP --> INDEX: %d - VALUE: 1", i);
+        gpio_set_level(RelayDevices[i], 0);
       }
+
+      // Waiting for emergency stop to lift
       while (true) {
         vTaskDelay(pdMS_TO_TICKS(500));
         bits = xEventGroupWaitBits(DeviceStatus, EMERGENCY_STOP, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
@@ -39,20 +43,22 @@ void RelayControllerTask(void *PvParams) {
       }
     }
 
+    // When not cooking
     bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdFALSE, pdMS_TO_TICKS(1000));
-
     if (!(bits & IS_COOKING)) {
-      for (i = 0; i <= length; i++) {
-        gpio_set_level(RelayDevices[i], 1);
+      for (i = 0; i < length; i++) {
+        ESP_LOGV(TAG, "NOT COOKING --> INDEX: %d - VALUE: 1", i);
+        gpio_set_level(RelayDevices[i], 0);
       }
       continue;
     }
 
+    // Regular operation
     bits = xEventGroupGetBits(RelayControllerFlags);
     static bool is_set;
     for (i = 0; i < length; i++) {
       is_set = ~bits & (1 << i);
-      ESP_LOGD(TAG, "INDEX: %d - VALUE: %d", i, is_set);
+      ESP_LOGV(TAG, "REGULAR --> INDEX: %d - VALUE: %d", i, is_set);
       gpio_set_level(RelayDevices[i], is_set);
     }
   }

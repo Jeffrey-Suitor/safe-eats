@@ -18,14 +18,15 @@ void QRScannerTask(void *args) {
   uart_flush(UART_PORT);
 
   while (true) {
-    size = uart_read_bytes(UART_PORT, qrCode, (QR_CODE_LENGTH - 1), 50 / portTICK_PERIOD_MS);
+    size = uart_read_bytes(UART_PORT, qrCode, (QR_CODE_LENGTH - 1), pdMS_TO_TICKS(50));
     if (size) {
       qrCode[size] = '\0';
       ESP_LOGI(TAG, "QR code: %s", qrCode);
       xQueueOverwrite(QRCodeQueue, (void *)qrCode);
       uart_flush(UART_PORT);
+      vTaskDelay(pdMS_TO_TICKS(5000));
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
@@ -46,7 +47,7 @@ void SetupQRScanner(void) {
   ESP_LOGD(TAG, "QR Scanner UART Configured");
 
   QRCodeQueue = xQueueCreate(1, sizeof(qrCode));
-  BaseType_t task = xTaskCreate(QRScannerTask, "QRScannerTask", QR_CODE_LENGTH * 2, NULL, 6, NULL);
+  BaseType_t task = xTaskCreate(QRScannerTask, "QRScannerTask", QR_CODE_LENGTH * 2, NULL, 1, NULL);
   if (task == pdFALSE) ESP_LOGE(TAG, "Failed to create QR scanner task");
   ESP_LOGD(TAG, "QR scanner task created");
 }

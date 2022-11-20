@@ -10,10 +10,15 @@ extern void SetupWebsocket(void);
 extern QueueHandle_t WebsocketQueue;
 extern TaskHandle_t Websocket;
 
+typedef struct JSONString {
+  char string[1024];
+  int length;
+} JSONString;
+
 typedef struct WebSocketMessage {
   char path[32];
   char method[16];
-  cJSON *data;
+  JSONString dataString;
 } WebSocketMessage;
 
 #endif

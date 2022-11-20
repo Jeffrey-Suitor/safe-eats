@@ -28,7 +28,7 @@ extern QueueHandle_t BuzzerQueue;
 #define gSH_NOTE 830
 #define aH_NOTE 880
 
-#define BUZZER_PIN GPIO_NUM_27
+#define BUZZER_PIN GPIO_NUM_23
 
 typedef struct BuzzerNote {
   uint32_t freq;

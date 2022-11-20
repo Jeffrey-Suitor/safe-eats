@@ -29,7 +29,7 @@ function ApplianceTemperatureDial({
   const utils = trpc.useContext();
   trpc.appliance.onTemperatureUpdate.useSubscription(id, {
     onData: (temperatures) => {
-      utils.appliance.byId.setData({ ...appliance, ...temperatures });
+      utils.appliance.get.setData({ ...appliance, ...temperatures });
       setTemp(temperatures);
     },
     onError(err) {
@@ -145,12 +145,12 @@ function ApplianceCard({
   const utils = trpc.useContext();
 
   const { data: appliance, isLoading } =
-    trpc.appliance.byId.useQuery(applianceId);
+    trpc.appliance.get.useQuery(applianceId);
 
   trpc.appliance.onStatusUpdate.useSubscription(applianceId, {
     onData: ({ message, type }) => {
       if (type === "cookingStart" || type === "cookingEnd") {
-        utils.appliance.byId.invalidate(applianceId);
+        utils.appliance.get.invalidate(applianceId);
       }
     },
     onError(err) {
