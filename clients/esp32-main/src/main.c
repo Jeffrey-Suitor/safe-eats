@@ -3,6 +3,7 @@
 #include <freertos/queue.h>
 #include <stdio.h>
 
+#include "bluetooth.h"
 #include "buzzer.h"
 #include "config.h"
 #include "console.h"
@@ -26,7 +27,6 @@ char APPLIANCE_TYPE[64];
 
 void app_main() {
   DeviceStatus = xEventGroupCreate();
-  gpio_install_isr_service(0);
   SetupConsole();
   SetupFlash();
 
@@ -57,4 +57,5 @@ void app_main() {
   SetupBuzzer();
   SetupCookingController();
   SetupDBManager();
+  SetupBluetooth();
 }

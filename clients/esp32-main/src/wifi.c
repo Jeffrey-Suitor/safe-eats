@@ -31,6 +31,21 @@ static void WifiEventHandler(void *arg, esp_event_base_t event_base, int32_t eve
   }
 }
 
+void SetWifiCreds(char *ssid, char *pass) {
+  FlashSet(NVS_TYPE_STR, WIFI_SSID_KEY, ssid, 32);
+  FlashSet(NVS_TYPE_STR, WIFI_PASS_KEY, pass, 32);
+  esp_wifi_stop();
+
+  wifi_config_t wifi_config = {.sta = {.threshold.authmode = WIFI_AUTH_WPA2_PSK, .pmf_cfg = {.capable = true, .required = false}}};
+  memcpy(wifi_config.sta.ssid, ssid, 32);
+  memcpy(wifi_config.sta.password, pass, 32);
+
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+  ESP_ERROR_CHECK(esp_wifi_start());
+  ESP_LOGI(TAG, "Connecting to wifi: %s pass: %s", ssid, pass);
+}
+
 void SetupWifi(void) {
   ESP_LOGD(TAG, "Setting up wifi");
   ESP_ERROR_CHECK(esp_netif_init());
@@ -47,15 +62,7 @@ void SetupWifi(void) {
   char wifi_pass[32];
   FlashStringFallback(NVS_TYPE_STR, WIFI_SSID_KEY, wifi_ssid, 32, DEFAULT_WIFI_SSID);
   FlashStringFallback(NVS_TYPE_STR, WIFI_PASS_KEY, wifi_pass, 32, DEFAULT_WIFI_PASS);
+  SetWifiCreds(wifi_ssid, wifi_pass);
 
-  ESP_LOGE(TAG, "Connecting to wifi: %s pass: %s", wifi_ssid, wifi_pass);
-
-  wifi_config_t wifi_config = {.sta = {.threshold.authmode = WIFI_AUTH_WPA2_PSK, .pmf_cfg = {.capable = true, .required = false}}};
-  memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_ssid));
-  memcpy(wifi_config.sta.password, wifi_pass, sizeof(wifi_pass));
-
-  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
-  ESP_ERROR_CHECK(esp_wifi_start());
   ESP_LOGD(TAG, "Wifi setup complete");
 }

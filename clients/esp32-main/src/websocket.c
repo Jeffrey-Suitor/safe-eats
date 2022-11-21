@@ -114,7 +114,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         json.length = data->data_len;
         strncpy(json.string, data->data_ptr, data->data_len);
         xQueueOverwrite(DecodeRecipeQueue, &json);
-        ESP_LOGE(TAG, "Recipe sent");
       }
 
       cJSON_Delete(json);
@@ -192,7 +191,7 @@ void SetupWebsocket() {
     ESP_LOGE(TAG, "Failed to create WebsocketQueue");
   }
 
-  xTaskCreate(WebsocketTask, "WebsocketTask", 4096 * 3, NULL, 3, &Websocket);
+  xTaskCreate(WebsocketTask, "WebsocketTask", 4096, NULL, 3, &Websocket);
 
   SHUTDOWN_TIMER = xTimerCreate("Websocket shutdown timer", pdMS_TO_TICKS(WEBSOCKET_TIMEOUT * 1000), pdTRUE, NULL, shutdown_signaler);
   START_TIMER = xTimerCreate("Websocket start timer", pdMS_TO_TICKS(1000), pdTRUE, NULL, start_signaler);

@@ -18,34 +18,43 @@ BuzzerNote MealStarted = {a_NOTE, 100, 6};
 BuzzerNote MealFinished = {b_NOTE, 100, 6};
 BuzzerNote EmergencyStop = {gSH_NOTE, 250, 12};
 
+#define LEDC_TIMER LEDC_TIMER_0
+#define LEDC_MODE LEDC_LOW_SPEED_MODE
+#define LEDC_CHANNEL LEDC_CHANNEL_0
+#define LEDC_DUTY_RES LEDC_TIMER_10_BIT  // Set duty resolution to 10 bits
+#define LEDC_DUTY 511                    // Set duty to 50%. ((2 ** 10) - 1) * 50% = 511
+#define LEDC_FREQUENCY (5000)            // Frequency in Hertz. Set frequency at 5 kHz
+
 void sound(uint32_t freq, uint32_t duration, uint32_t repeats) {
   static int i = 0;
-  ledc_timer_config_t timer_conf;
-  timer_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
-  timer_conf.duty_resolution = LEDC_TIMER_10_BIT;
-  timer_conf.timer_num = LEDC_TIMER_0;
-  timer_conf.freq_hz = freq;
-  ledc_timer_config(&timer_conf);
 
-  ledc_channel_config_t ledc_conf;
-  ledc_conf.gpio_num = BUZZER_PIN;
-  ledc_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
-  ledc_conf.channel = LEDC_CHANNEL_0;
-  ledc_conf.intr_type = LEDC_INTR_DISABLE;
-  ledc_conf.timer_sel = LEDC_TIMER_0;
-  ledc_conf.duty = 0x0;  // 50%=0x3FFF, 100%=0x7FFF for 15 Bit
-                         // 50%=0x01FF, 100%=0x03FF for 10 Bit
-  ledc_channel_config(&ledc_conf);
+  // Prepare and then apply the LEDC PWM timer configuration
+  ledc_timer_config_t ledc_timer = {.speed_mode = LEDC_MODE,
+                                    .timer_num = LEDC_TIMER,
+                                    .duty_resolution = LEDC_DUTY_RES,
+                                    .freq_hz = LEDC_FREQUENCY,  // Set output frequency at 5 kHz
+                                    .clk_cfg = LEDC_AUTO_CLK};
+  ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+  // Prepare and then apply the LEDC PWM channel configuration
+  ledc_channel_config_t ledc_channel = {.speed_mode = LEDC_MODE,
+                                        .channel = LEDC_CHANNEL,
+                                        .timer_sel = LEDC_TIMER,
+                                        .intr_type = LEDC_INTR_DISABLE,
+                                        .gpio_num = BUZZER_PIN,
+                                        .duty = 0,  // Set duty to 0%
+                                        .hpoint = 0};
+  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 
   for (i = 0; i < repeats; i++) {
     // start
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0,
-                  0x7F);  // 12% duty - play here for your speaker or buzzer
-    ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, LEDC_DUTY));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
     vTaskDelay(pdMS_TO_TICKS(duration));
+
     // stop
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
-    ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
     vTaskDelay(pdMS_TO_TICKS(duration));
   }
 }
@@ -53,9 +62,9 @@ void sound(uint32_t freq, uint32_t duration, uint32_t repeats) {
 void BuzzerTask(void *pvParameters) {
   BuzzerNote note;
   while (true) {
-    ESP_LOGI(TAG, "Received note with duration %d and freq %d", note.duration, note.freq);
     xQueueReceive(BuzzerQueue, &note, portMAX_DELAY);
-    // sound(note.freq, note.duration, note.repeats);
+    ESP_LOGI(TAG, "duration: %d, freq: %d, repeats: %d", note.duration, note.freq, note.repeats);
+    sound(note.freq, note.duration, note.repeats);
   }
 }
 

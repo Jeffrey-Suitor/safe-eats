@@ -57,7 +57,7 @@ void RelayControllerTask(void *PvParams) {
     bits = xEventGroupGetBits(RelayControllerFlags);
     static bool is_set;
     for (i = 0; i < length; i++) {
-      is_set = ~bits & (1 << i);
+      is_set = bits & (1 << i);
       ESP_LOGV(TAG, "REGULAR --> INDEX: %d - VALUE: %d", i, is_set);
       gpio_set_level(RelayDevices[i], is_set);
     }

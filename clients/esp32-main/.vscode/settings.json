@@ -2,12 +2,6 @@
   "files.associations": {
     "*.excalidraw": "json",
     "*.excalidrawlib": "json",
-    "chrono": "c",
-    "websocket.h": "c",
-    "temperature_sensor.h": "c",
-    "freertos.h": "c",
-    "esp_log.h": "c",
-    "config.h": "c",
-    "queue.h": "c"
+    "thread": "c"
   }
 }
