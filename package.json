@@ -10,6 +10,9 @@
   "overrides": {
     "@react-navigation/material-bottom-tabs": {
       "react-native-paper": "^5.0.0-rc.9"
+    },
+    "react-native-circular-progress-indicator@4.4.0": {
+      "react-native-svg": "^13.4.0"
     }
   },
   "scripts": {

@@ -4,7 +4,7 @@ dotenv.config({ path: "../../.env" });
 export default {
   expo: {
     name: "safe-eats-app",
-    plugins: ["sentry-expo"],
+    plugins: ["sentry-expo", "@config-plugins/react-native-ble-plx"],
     slug: "safe-eats-app",
     scheme: "safe-eats-app",
     version: "1.0.0",
