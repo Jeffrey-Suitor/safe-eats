@@ -13,6 +13,7 @@
 #include "esp_sntp.h"
 #include "flash.h"
 #include "helpers.h"
+#include "lcd.h"
 #include "qr_scanner.h"
 #include "relay_controller.h"
 #include "temperature_sensor.h"
@@ -49,6 +50,7 @@ void app_main() {
 
   StatusMessageQueue = xQueueCreate(3, sizeof(StatusMessage));
 
+  SetupLCD();
   SetupWifi();
   SetupTempSensor();
   SetupQRScanner();

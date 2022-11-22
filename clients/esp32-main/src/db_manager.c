@@ -13,6 +13,7 @@
 #include "esp_tls.h"
 #include "esp_wifi.h"
 #include "helpers.h"
+#include "lcd.h"
 #include "qr_scanner.h"
 #include "temperature_sensor.h"
 #include "websocket.h"
@@ -87,6 +88,10 @@ void MonitorCookingStatusTask(void *args) {
   cJSON *data = cJSON_CreateObject();
   cJSON_AddStringToObject(data, "id", ID);
   EventBits_t bits;
+  LCDMessage LCDMsg = {
+      .row = 3,
+      .col = 0,
+  };
   bool cookingStatus = false;
   bool newestCookingStatus = false;
 
@@ -100,6 +105,14 @@ void MonitorCookingStatusTask(void *args) {
       strcpy(msg.path, cookingStatus ? "appliance.cookingStart" : "appliance.cookingStop");
       ESP_LOGV(TAG, "Setting cooking status to %s", cookingStatus ? "true" : "false");
       xQueueSend(WebsocketQueue, &msg, portMAX_DELAY);
+
+      if (!cookingStatus) {  // Clear the LCD
+        LCDMsg.row = 2;
+        xQueueSend(LCDQueue, &LCDMsg, pdMS_TO_TICKS(1000));
+        LCDMsg.row = 3;
+        xQueueSend(LCDQueue, &LCDMsg, pdMS_TO_TICKS(1000));
+      }
+
     } else {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -110,6 +123,10 @@ void MonitorCookingStatusTask(void *args) {
 void SetRecipeTask(void *args) {
   JSONString jsonString;
   Recipe recipe;
+  LCDMessage msg = {
+      .col = 0,
+      .row = 3,
+  };
   const cJSON *result = NULL;
   const cJSON *data = NULL;
   const cJSON *recipeJson = NULL;
@@ -120,6 +137,7 @@ void SetRecipeTask(void *args) {
   const cJSON *cookingTime = NULL;
   const cJSON *expiryDate = NULL;
   const cJSON *id = NULL;
+  const cJSON *name = NULL;
 
   while (true) {
     xQueueReceive(DecodeRecipeQueue, &jsonString, portMAX_DELAY);
@@ -158,6 +176,11 @@ void SetRecipeTask(void *args) {
     ESP_LOGV(TAG, "id: %s", recipe.id);
 
     xQueueSend(RecipeQueue, &recipe, portMAX_DELAY);
+
+    name = cJSON_GetObjectItemCaseSensitive(recipeJson, "name");
+    strcpy(msg.text, name->valuestring);
+    xQueueSend(LCDQueue, &msg, portMAX_DELAY);
+
     cJSON_Delete(json);
   }
 }

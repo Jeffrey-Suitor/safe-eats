@@ -10,8 +10,6 @@ import {
   LoginInfoSchema,
 } from "@safe-eats/types/userTypes";
 
-WebBrowser.maybeCompleteAuthSession();
-
 const StyledTextInput = styled(TextInput);
 
 function LoginPage() {

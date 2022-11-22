@@ -8,6 +8,7 @@
 #include "config.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "lcd.h"
 
 #define TAG "TEMPERATURE_SENSOR"
 
@@ -42,10 +43,19 @@ float TempSensorRead() {
 void TempSensorTask(void *pvParams) {
   Temperature temp;
   EventBits_t bits;
+  LCDMessage msg = {
+      .row = 1,
+      .col = 0,
+      .text = "Temp: ",
+  };
+  xQueueSend(LCDQueue, &msg, portMAX_DELAY);
+  msg.col = 6;
   while (true) {
     temp.c = TempSensorRead();
     temp.f = roundf(temp.c * 1.8 + 32.0);
     ESP_LOGI(TAG, "C: %d, F: %d", temp.c, temp.f);
+    sprintf(msg.text, "%03d C | %03d F", temp.c, temp.f);
+    xQueueSend(LCDQueue, &msg, pdMS_TO_TICKS(10));
     xQueueOverwrite(TempSensorQueue, &temp);
     bits = xEventGroupWaitBits(DeviceStatus, IS_COOKING, pdFALSE, pdFALSE, pdMS_TO_TICKS(30000));
     if (bits & IS_COOKING) {

@@ -12,6 +12,7 @@
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 #include "host/ble_hs.h"
+#include "lcd.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "nvs_flash.h"
@@ -39,7 +40,6 @@ static int ble_gap_event(struct ble_gap_event *event, void *arg) {
     case BLE_GAP_EVENT_CONNECT:
       ESP_LOGI("GAP", "BLE GAP EVENT CONNECT %s", event->connect.status == 0 ? "OK!" : "FAILED!");
       if (event->connect.status != 0) {
-        // start advertising again!
         Advertise();
       }
       break;
@@ -85,15 +85,22 @@ void OnSync(void) {
 void HostTask(void *param) { nimble_port_run(); }
 
 void SetBLEDeviceName(char *name) {
+  LCDMessage msg = {
+      .row = 0,
+      .col = 0,
+  };
   FlashSet(NVS_TYPE_STR, BLE_DEVICE_NAME_KEY, name, 32);
   ble_svc_gap_device_name_set(name);
+  strcpy(msg.text, name);
+  xQueueSend(LCDQueue, &msg, portMAX_DELAY);
+  ESP_LOGI(TAG, "BLE Device Name Set to %s", name);
 }
 
 // callback from characteristic 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 static int SetWifiBLECmd(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
-  // data pattern {"SSID":"PUT_YOUR_WIFI_NAME", "PASS":"PUT_YOUR_WIFI_PASS", "NAME":"PUT_YOUR_DEVICE_NAME"}
+  // data pattern {"SSID": "PUT_YOUR_WIFI_NAME", "PASS": "PUT_YOUR_WIFI_PASS", "NAME": "PUT_YOUR_DEVICE_NAME"}
   char *incoming_data = (char *)ctxt->om->om_data;
-  printf("incoming message: %s\n", incoming_data);
+  ESP_LOGI(TAG, "incoming message: %s\n", incoming_data);
   cJSON *payload = cJSON_Parse(incoming_data);
   cJSON *ssid = cJSON_GetObjectItem(payload, "SSID");
   cJSON *pass = cJSON_GetObjectItem(payload, "PASS");
@@ -103,7 +110,6 @@ static int SetWifiBLECmd(uint16_t conn_handle, uint16_t attr_handle, struct ble_
   ble_device_name = name->valuestring;
   SetWifiCreds(wifi_ssid, wifi_pass);
   SetBLEDeviceName(ble_device_name);
-  printf("WiFi Credentials SSID:(%s) & PASS: (%s)\n", wifi_ssid, wifi_pass);
   cJSON_Delete(payload);
   return 0;
 }
@@ -136,7 +142,6 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
 };
 
 void SetupBluetooth() {
-  nvs_flash_init();
   esp_nimble_hci_and_controller_init();  // initialize bluetooth controller.
   nimble_port_init();                    // nimble library initialization.
   char deviceName[32];

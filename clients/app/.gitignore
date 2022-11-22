@@ -1,2 +1,6 @@
-/android
-.expo
+android/
+.expo/
+dist/
+ios/
+.expo-shared/
+*.apk

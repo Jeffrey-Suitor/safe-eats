@@ -98,7 +98,7 @@ void RegisterBuzzer(void) {
 
 void SetupBuzzer(void) {
   BuzzerQueue = xQueueCreate(3, sizeof(BuzzerNote));
-  xTaskCreate(BuzzerTask, "BuzzerTask", 4096, NULL, 1, &Buzzer);
+  xTaskCreate(BuzzerTask, "BuzzerTask", 2048, NULL, 1, &Buzzer);
   vTaskDelay(pdMS_TO_TICKS(1000));
   RegisterBuzzer();
 }
