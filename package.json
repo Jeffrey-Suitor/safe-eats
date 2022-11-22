@@ -7,6 +7,11 @@
     "services/*",
     "packages/*"
   ],
+  "overrides": {
+    "@react-navigation/material-bottom-tabs": {
+      "react-native-paper": "^5.0.0-rc.9"
+    }
+  },
   "scripts": {
     "postinstall": "turbo run postinstall",
     "db-push": "npm run db-push -w @safe-eats/db",
