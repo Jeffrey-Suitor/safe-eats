@@ -29,7 +29,7 @@ export const createContext = async (
       user,
     };
   } catch (e) {
-    console.log("Failed to create context");
+    // console.error("Failed to create context", e);
     return context;
   }
 };

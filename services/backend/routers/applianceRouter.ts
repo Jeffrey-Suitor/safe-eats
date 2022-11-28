@@ -7,6 +7,7 @@ import {
   StatusMessageWithIdSchema,
   StatusMessage,
   IdSchema,
+  defaultAppliance,
 } from "@safe-eats/types/applianceTypes";
 import { prisma } from "@safe-eats/db";
 import { router, authedProcedure, ee, publicProcedure } from "../utils/trpc";
@@ -17,14 +18,17 @@ import {
 } from "../utils/pushNotifications";
 
 export const applianceRouter = router({
-  exists: publicProcedure.input(z.string().uuid()).query(async ({ input }) => {
-    const appliance = await prisma.appliance.findUnique({
-      where: {
-        id: input,
-      },
-    });
-    return appliance != null;
-  }),
+  esp32Add: publicProcedure
+    .input(z.object({ name: z.string(), id: z.string(), BLEId: z.string() }))
+    .mutation(async ({ input }) => {
+      const appliance = await prisma.appliance.create({
+        data: {
+          ...defaultAppliance,
+          ...input,
+        },
+      });
+      return appliance;
+    }),
 
   add: authedProcedure
     .input(ApplianceSchema)
@@ -78,15 +82,13 @@ export const applianceRouter = router({
   }),
 
   update: authedProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
-    const { recipe } = input;
-    const applianceInfo = ApplianceWithoutRecipeSchema.parse(input);
     return await prisma.appliance.update({
       where: { id: input.id },
       data: {
-        ...applianceInfo,
+        ...input,
         recipe: {
           connect: {
-            id: recipe?.id ? recipe?.id : undefined,
+            id: input.recipe?.id ? input.recipe?.id : undefined,
           },
         },
       },
@@ -96,7 +98,6 @@ export const applianceRouter = router({
   onTemperatureUpdate: publicProcedure
     .input(IdSchema)
     .subscription(({ input: connectedApplianceId }) => {
-      console.log("onTemperatureUpdate");
       return observable<Temperature>((emit) => {
         console.log("onTemperatureUpdate: observable");
         const listener = (val: unknown) => {

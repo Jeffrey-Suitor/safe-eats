@@ -29,7 +29,8 @@ const seedQrCodes = async () => {
 const seedAppliances = async () => {
   const appliance1 = await prisma.appliance.create({
     data: {
-      id: "98CDACF7EA58",
+      id: "98:CD:AC:F7:EA:58",
+      BLEId: "98:CD:AC:F7:EA:5A",
       name: "Toaster Oven",
       type: "Toaster_Oven",
       temperatureC: 200,
@@ -45,6 +46,7 @@ const seedAppliances = async () => {
   const appliance2 = await prisma.appliance.create({
     data: {
       id: "z1z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
+      BLEId: "z1z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
       name: "Toaster Oven 2",
       type: "Toaster_Oven",
       temperatureC: 300,
@@ -57,6 +59,7 @@ const seedAppliances = async () => {
   const appliance3 = await prisma.appliance.create({
     data: {
       id: "z3z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
+      BLEId: "z3z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
       name: "Toaster Oven 3",
       type: "Toaster_Oven",
       temperatureC: 300,
@@ -66,38 +69,7 @@ const seedAppliances = async () => {
     },
   });
 
-  const appliance4 = await prisma.appliance.create({
-    data: {
-      id: "z4z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
-      name: "Toaster Oven 4",
-      type: "Toaster_Oven",
-      temperatureC: 300,
-      temperatureF: 600,
-      cookingStartTime: new Date().toISOString(),
-      recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
-    },
-  });
-
-  const appliance5 = await prisma.appliance.create({
-    data: {
-      id: "z5z2z3z4-e5f6-7g8h-9i0j-1k2l3m4n5o6z",
-      name: "Toaster Oven 5",
-      type: "Toaster_Oven",
-      temperatureC: 300,
-      temperatureF: 600,
-      cookingStartTime: new Date().toISOString(),
-      recipeId: "00000000-99d5-432f-96aa-bdd345f320b8",
-    },
-  });
-
-  console.log(
-    "Appliances seeded: ",
-    appliance1,
-    appliance2,
-    appliance3,
-    appliance4,
-    appliance5
-  );
+  console.log("Appliances seeded: ", appliance1, appliance2, appliance3);
 };
 
 const seedUsers = async () => {
@@ -157,8 +129,8 @@ const seedRecipes = async () => {
       id: `${i}0000000-99d6-432f-96aa-bdd345f320b8`,
       name: `Spaghetti ${i}`,
       description: "Always tasty",
-      cookingTime: 1200,
-      expiryDate: 432000,
+      cookingTime: 120000,
+      expiryDate: 60000 * 10,
       applianceType: "Toaster_Oven" as any,
       temperature: 200,
       temperatureUnit: "F" as any,

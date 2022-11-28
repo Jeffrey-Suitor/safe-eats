@@ -23,8 +23,14 @@ function RecipeInfo({
   containerClassName,
   stringClassName,
 }: RecipeInfoProps) {
-  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(recipe.cookingTime);
-  const { val: edVal, unit: edUnit } = millisecondsToUnits(recipe.expiryDate);
+  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(
+    recipe.cookingTime,
+    "cookingTime"
+  );
+  const { val: edVal, unit: edUnit } = millisecondsToUnits(
+    recipe.expiryDate,
+    "expiryDate"
+  );
   const recipeInfoMap: TextIconInterface[] = [
     {
       icon: "file-document-outline",

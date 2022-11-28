@@ -17,6 +17,7 @@ export const createAccessToken = (user: User) => {
   const uuid = uuidv4();
   accessTokenTable[uuid] = user;
   const uuidObj = TokenSchema.parse({ uuid });
+  console.log("Access token table in create", accessTokenTable);
 
   return jwt.sign(uuidObj, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "1h",
@@ -29,6 +30,8 @@ export const decryptAccessToken = (token: string) => {
   }
   const uuidObj = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   const uuid = TokenSchema.parse(uuidObj).uuid;
+  console.log("uuid", uuid);
+  console.log("access token table", accessTokenTable);
   const user = accessTokenTable[uuid];
   if (!user) {
     throw new Error("Invalid token");

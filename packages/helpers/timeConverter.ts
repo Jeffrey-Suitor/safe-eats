@@ -1,5 +1,5 @@
 export const cookingTimeUnits = ["Sec", "Min", "Hour"] as const;
-export const expiryDateUnits = ["Hour", "Day", "Week"] as const;
+export const expiryDateUnits = ["Min", "Hour", "Day", "Week"] as const;
 
 type combinedUnits =
   | typeof cookingTimeUnits[number]
@@ -34,14 +34,35 @@ export const unitsToMilliseconds = (
 };
 
 export const millisecondsToUnits = (
-  seconds: number
-): {
-  val: number;
-  unit: combinedUnits;
-} => {
-  for (const unitUnTyped in unitsInMilliseconds) {
-    const unit = unitUnTyped as combinedUnits;
+  seconds: number,
+  unitTypes: "cookingTime" | "expiryDate" | "all"
+): { val: number; unit: combinedUnits } => {
+  const getUnitTypes = () => {
+    switch (unitTypes) {
+      case "cookingTime":
+        return [...cookingTimeUnits];
+      case "expiryDate":
+        return [...expiryDateUnits];
+      case "all":
+        return [...cookingTimeUnits, ...expiryDateUnits];
+    }
+  };
+
+  const unorderedUnits = getUnitTypes();
+
+  const units = unorderedUnits
+    .sort((a, b) => unitsInMilliseconds[b] - unitsInMilliseconds[a]) // Order by largest to smallest
+    .filter((v, i, a) => a.indexOf(v) === i); // Get only unique values
+
+  for (const unit of units) {
+    console.log(
+      seconds,
+      unit,
+      unitsInMilliseconds[unit],
+      seconds % unitsInMilliseconds[unit]
+    );
     if (seconds % unitsInMilliseconds[unit] === 0) {
+      console.log(unit);
       return {
         val: seconds / unitsInMilliseconds[unit],
         unit,

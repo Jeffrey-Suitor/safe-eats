@@ -45,7 +45,7 @@ function ApplianceTemperatureDial({
     recipeTemperature === undefined || cookingStartTime === null
       ? [
           { color: "gray", value: 0 },
-          { color: "gray", value: 1 },
+          { color: "gray", value: 100 },
         ]
       : [
           { color: "gray", value: 0 },
@@ -80,7 +80,7 @@ function ApplianceTemperatureDial({
           ? undefined
           : `/${recipeTemperature}°${temperatureUnit}`
       }
-      strokeColorConfig={strokeColorConfig}
+      // strokeColorConfig={strokeColorConfig}
       titleColor="#000000"
       progressValueColor={valueColor(applianceTemperature, recipeTemperature)}
     />

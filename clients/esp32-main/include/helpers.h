@@ -18,7 +18,6 @@
 
 #define RESET_STRING_BUF(x) (memset(x, 0, sizeof(x)))
 
-size_t TrimWhitespace(char *out, size_t len, const char *str);
 void GetUniqueID(char *str);
 
 #endif

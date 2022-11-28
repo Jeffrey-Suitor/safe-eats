@@ -67,10 +67,14 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
       setIsAuthenticating(false);
     },
   });
+
   const [_, googleResponse, googlePromptAsync] = Google.useAuthRequest({
     expoClientId:
-      "600679286779-fppu5b515elfvaruo945urr4lf4q58ev.apps.googleusercontent.com",
+      "579248313319-89cghgosmptav9i153nb1a7l3vl5e8cq.apps.googleusercontent.com",
+    androidClientId:
+      "579248313319-ma3bl34k89tibmjmnrcjs9lb4a5aedp4.apps.googleusercontent.com",
   });
+
   useEffect(() => {
     if (googleResponse?.type === "success") {
       const { access_token } = googleResponse.params;
@@ -85,7 +89,6 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     onSuccess: ({ jwt, user }) => {
       setUser(user);
       setJwt(jwt);
-      navigation.navigate("Appliances");
     },
     onSettled: () => {
       setIsAuthenticating(false);

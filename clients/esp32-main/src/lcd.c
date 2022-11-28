@@ -99,10 +99,12 @@ void LCDTask(void *pvParameters) {
   LCDMessage msg;
   while (1) {
     xQueueReceive(LCDQueue, &msg, portMAX_DELAY);
-    ESP_LOGE(TAG, "Message: %s, row: %d, col: %d", msg.text, msg.row, msg.col);
-    lcd_put_cur(msg.row, msg.col);
-    lcd_send_string(&msg.text[0]);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    if (msg.row == -1) {
+      ESP_LOGE(TAG, "Message: %s, row: %d, col: %d", msg.text, msg.row, msg.col);
+      lcd_put_cur(msg.row, msg.col);
+      lcd_send_string(&msg.text[0]);
+      vTaskDelay(pdMS_TO_TICKS(10));
+    }
   }
 }
 
@@ -127,7 +129,7 @@ void SetupLCD(void) {
   lcd_init();
   lcd_clear();
 
-  lcd_put_cur(0, 0);
+  // lcd_put_cur(0, 0);
   // lcd_send_string("SafeEats");
 
   // lcd_put_cur(1, 0);
@@ -140,5 +142,5 @@ void SetupLCD(void) {
   lcd_send_string("from ESP32 abcdefghi");
 
   LCDQueue = xQueueCreate(3, sizeof(LCDMessage));
-  xTaskCreate(LCDTask, "LCDTask", 2048, NULL, 2, NULL);
+  // xTaskCreate(LCDTask, "LCDTask", 2048, NULL, 2, NULL);
 }

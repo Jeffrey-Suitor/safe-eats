@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import * as WebBrowser from "expo-web-browser";
+import React, { useEffect, useState } from "react";
 import { Button, View } from "react-native";
 import { useAuth } from "../components/AuthContext";
 import { HelperText, TextInput } from "react-native-paper";

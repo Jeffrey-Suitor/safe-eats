@@ -26,43 +26,44 @@ enum ApplianceMode {
 }
 
 enum Role {
-  SUPERADMIN
   ADMIN
+  SUPERADMIN
   USER
 }
 
 model Recipe {
   id              String          @id @default(uuid())
-  name            String
-  description     String
-  cookingTime     Int
-  expiryDate      Int
+  appliance       Appliance[]
+  applianceMode   ApplianceMode
   applianceType   ApplianceType
+  cookingTime     Int
+  description     String
+  expiryDate      Int
+  name            String
+  qrCodes         QRCode[]
   temperature     Int
   temperatureUnit TemperatureUnit
-  applianceMode   ApplianceMode
-  qrCodes         QRCode[]
-  appliance       Appliance[]
   users           User[]
 }
 
 model QRCode {
   id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
   recipe    Recipe   @relation(references: [id], fields: [recipeId], onDelete: Cascade)
   recipeId  String
-  createdAt DateTime @default(now())
 }
 
 model Appliance {
   id               String        @id
-  name             String
-  type             ApplianceType
-  updatedAt        DateTime      @updatedAt
-  temperatureC     Int
-  temperatureF     Int
+  BLEId            String
   cookingStartTime DateTime?
+  name             String
   recipe           Recipe?       @relation(fields: [recipeId], references: [id], onDelete: SetNull)
   recipeId         String?
+  temperatureC     Int
+  temperatureF     Int
+  type             ApplianceType
+  updatedAt        DateTime      @updatedAt
   users            User[]
 }
 

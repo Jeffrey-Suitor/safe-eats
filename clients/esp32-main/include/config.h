@@ -23,8 +23,8 @@ extern char APPLIANCE_TYPE[64];
 
 #define EMERGENCY_STOP BIT0
 #define WIFI_CONNECTED BIT1
-#define WEBSOCKET_READY BIT2
-#define DEFINED_IN_DB BIT3
+#define WEBSOCKET_CONNECTED BIT2
+#define WEBSOCKET_READY BIT3
 #define IS_COOKING BIT4
 
 extern EventGroupHandle_t DeviceStatus;

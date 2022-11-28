@@ -16,7 +16,7 @@ esp_err_t FlashSet(nvs_type_t type, const char *key, void *value, size_t size) {
 
   err = nvs_open(NAMESPACE, NVS_READWRITE, &nvs);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Failed to open nvs");
+    ESP_LOGE(TAG, "Failed to open nvs with error: %s", esp_err_to_name(err));
     return err;
   }
   switch (type) {
@@ -64,11 +64,13 @@ esp_err_t FlashSet(nvs_type_t type, const char *key, void *value, size_t size) {
     err = nvs_commit(nvs);
     if (err == ESP_OK) {
       ESP_LOGI(TAG, "Value SET KEY: '%s'", key);
+    } else {
+      ESP_LOGE(TAG, "Failed to commit nvs with error: %s", esp_err_to_name(err));
     }
   }
   nvs_close(nvs);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Failed to SET KEY: %s", key);
+    ESP_LOGE(TAG, "Failed to SET KEY: %s with error: %s", key, esp_err_to_name(err));
   }
   return err;
 }
@@ -123,7 +125,7 @@ esp_err_t FlashGet(nvs_type_t type, const char *key, void *output, size_t size) 
   }
   nvs_close(nvs);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Failed GET KEY: %s", key);
+    ESP_LOGE(TAG, "Failed GET KEY: %s with error: %s", key, esp_err_to_name(err));
   }
   return err;
 }
@@ -132,7 +134,7 @@ void FlashStringFallback(nvs_type_t type, const char *key, char *output, size_t 
   if (FlashGet(type, key, output, size) != ESP_OK) {
     strcpy(output, fallback);
     FlashSet(type, key, fallback, size);
-    ESP_LOGW(TAG, "Using default wifi ssid");
+    ESP_LOGW(TAG, "Using default %s for %s", fallback, key);
   }
 }
 

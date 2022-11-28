@@ -22,8 +22,9 @@
 #include "wifi.h"
 
 #define DEVICE_INFO_SERVICE_UUID 0x180A
-#define SET_WIFI_CHAR 0x0001
-#define PAIR_APPLIANCE_CHAR 0x0002
+#define SET_WIFI_CHAR 0x0000
+#define PAIR_APPLIANCE_CHAR 0x0001
+#define GET_DEVICE_NAME_CHAR 0x0002
 
 #define TAG "BLE"
 
@@ -62,6 +63,7 @@ static int ble_gap_event(struct ble_gap_event *event, void *arg) {
 
 void Advertise(void) {
   struct ble_hs_adv_fields fields;
+  char manuf_data[] = "SafeEats";
   memset(&fields, 0, sizeof(fields));
   fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_DISC_LTD;
   fields.tx_pwr_lvl_is_present = 1;
@@ -69,6 +71,8 @@ void Advertise(void) {
   fields.name = (uint8_t *)ble_svc_gap_device_name();
   fields.name_len = strlen(ble_svc_gap_device_name());
   fields.name_is_complete = 1;
+  fields.mfg_data = (uint8_t *)&manuf_data;
+  fields.mfg_data_len = strlen(manuf_data);
   ble_gap_adv_set_fields(&fields);
   struct ble_gap_adv_params adv_params;
   memset(&adv_params, 0, sizeof(adv_params));
@@ -80,6 +84,11 @@ void Advertise(void) {
 void OnSync(void) {
   ble_hs_id_infer_auto(0, &ble_addr_type);  // determines automatic address.
   Advertise();                              // start advertising the services -->
+  uint8_t mac[6] = {0};
+  ble_hs_id_copy_addr(ble_addr_type, mac, NULL);
+  char BLEId[64];
+  sprintf(BLEId, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+  FlashSet(NVS_TYPE_STR, BLE_DEVICE_ID_KEY, BLEId, 64);
 }
 
 void HostTask(void *param) { nimble_port_run(); }
@@ -102,13 +111,15 @@ static int SetWifiBLECmd(uint16_t conn_handle, uint16_t attr_handle, struct ble_
   char *incoming_data = (char *)ctxt->om->om_data;
   ESP_LOGI(TAG, "incoming message: %s\n", incoming_data);
   cJSON *payload = cJSON_Parse(incoming_data);
-  cJSON *ssid = cJSON_GetObjectItem(payload, "SSID");
-  cJSON *pass = cJSON_GetObjectItem(payload, "PASS");
-  cJSON *name = cJSON_GetObjectItem(payload, "NAME");
+  cJSON *ssid = cJSON_GetObjectItem(payload, "ssid");
+  cJSON *pass = cJSON_GetObjectItem(payload, "name");
+  cJSON *name = cJSON_GetObjectItem(payload, "pass");
   wifi_ssid = ssid->valuestring;
   wifi_pass = pass->valuestring;
   ble_device_name = name->valuestring;
-  SetWifiCreds(wifi_ssid, wifi_pass);
+  if (strlen(wifi_ssid) > 0 && strlen(wifi_pass) > 0) {
+    SetWifiCreds(wifi_ssid, wifi_pass);
+  }
   SetBLEDeviceName(ble_device_name);
   cJSON_Delete(payload);
   return 0;
@@ -116,6 +127,14 @@ static int SetWifiBLECmd(uint16_t conn_handle, uint16_t attr_handle, struct ble_
 
 static int PairApplianceBLECmd(uint16_t con_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
   os_mbuf_append(ctxt->om, ID, strlen(ID));
+  return 0;
+}
+
+static int GetApplianceNameBLECmd(uint16_t con_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
+  char *name = (char *)malloc(32);
+  FlashGet(NVS_TYPE_STR, BLE_DEVICE_NAME_KEY, name, 32);
+  os_mbuf_append(ctxt->om, name, strlen(name));
+  free(name);
   return 0;
 }
 
@@ -134,6 +153,11 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
                     .uuid = BLE_UUID16_DECLARE(PAIR_APPLIANCE_CHAR),
                     .flags = BLE_GATT_CHR_F_READ,
                     .access_cb = PairApplianceBLECmd,
+                },
+                {
+                    .uuid = BLE_UUID16_DECLARE(GET_DEVICE_NAME_CHAR),
+                    .flags = BLE_GATT_CHR_F_READ,
+                    .access_cb = GetApplianceNameBLECmd,
                 },
                 {0},
             },

@@ -3,7 +3,7 @@ dotenv.config({ path: "../../.env" });
 
 export default {
   expo: {
-    name: "safe-eats-app",
+    name: "Safe Eats",
     plugins: ["sentry-expo", "@config-plugins/react-native-ble-plx"],
     slug: "safe-eats-app",
     scheme: "safe-eats-app",
@@ -33,7 +33,7 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
-      bundleIdentifier: "com.SafeEatsApp.expo",
+      bundleIdentifier: "com.safeeats.expo",
       supportsTablet: true,
     },
     android: {
@@ -41,7 +41,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF",
       },
-      package: "com.SafeEatsApp.expo",
+      package: "com.safeeats.expo",
     },
     web: {
       favicon: "./assets/favicon.png",

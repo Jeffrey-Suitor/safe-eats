@@ -14,7 +14,7 @@ import { styled } from 'nativewind';
 import type {Recipe} from "@safe-eats/types/recipeTypes";
 import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
-import { cookingTimeUnits, expiryDateUnits,unitsToMilliseconds } from "@safe-eats/helpers/timeConverter";
+import { cookingTimeUnits, expiryDateUnits, millisecondsToUnits,unitsToMilliseconds } from "@safe-eats/helpers/timeConverter";
 import { capitalize } from "@safe-eats/helpers/stringHelpers";
 
 const StyledTextInput = styled(TextInput);
@@ -31,22 +31,28 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
     },
   });
 
+  const initialCookingTime = millisecondsToUnits(recipe.cookingTime, "cookingTime");
+  const initialExpiryDate = millisecondsToUnits(recipe.expiryDate, "expiryDate");
+
   const [showDropDown, setShowDropDown] = useState<typeof dropDownValues[number] | null>(null);
   const [showErrors, setShowErrors] = useState(false);
-  const [newRecipe, setNewRecipe] = useState<Recipe>(recipe);
 
-  const [cookingTimeUnit, setCookingTimeUnit] =
-    useState<typeof cookingTimeUnits[number]>("Min");
+    const [cookingTimeUnit, setCookingTimeUnit] =
+    useState<typeof cookingTimeUnits[number]>(initialCookingTime.unit as typeof cookingTimeUnits[number]);
 
   const [expiryDateUnit, setExpiryDateUnit] =
-    useState<typeof expiryDateUnits[number]>("Day");
+    useState<typeof expiryDateUnits[number]>(initialExpiryDate.unit as typeof expiryDateUnits[number]);
+
+  const [newRecipe, setNewRecipe] = useState<Recipe>(recipe);
+
+
 
   const [formComplete, setFormComplete] = useState(false);
 
   useEffect(() => {
     const result = RecipeSchema.safeParse(newRecipe);
     setFormComplete(result.success);
-  })
+  }, [newRecipe]);
 
 
   return (
@@ -56,6 +62,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
           <StyledTextInput
             label=<Text><MaterialCommunityIcons name={"chef-hat"} size={20} /> Recipe</Text>
             placeholder="Ex: Chicken Alfredo"
+            value={newRecipe.name}
             onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, name: textVal } })}
           />
           <HelperText type="error" visible={showErrors && newRecipe.name === ""}>
@@ -67,6 +74,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
           <StyledTextInput
             label=<Text><MaterialIcons name={"description"} size={20} /> Description</Text>
             placeholder="Ex: Mom's favourite recipe"
+            value={newRecipe.description}
             onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, description: textVal } })}
           />
           <HelperText type="error" visible={showErrors && newRecipe.description === ""}>
@@ -81,6 +89,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
               keyboardType="number-pad"
               label=<Text><MaterialCommunityIcons name={"clock-time-five-outline"} size={20} /> Cooking Time</Text>
               placeholder="Ex: 10"
+              value={newRecipe.cookingTime.toString()}
               onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, cookingTime: unitsToMilliseconds(Number(textVal), cookingTimeUnit) } })}
             />
             <StyledDropDown
@@ -106,14 +115,13 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
               keyboardType="number-pad"
               label=<Text><MaterialCommunityIcons name={"calendar-month-outline"} size={20} /> Expiry Date</Text>
               placeholder="Ex: 4"
+              value={newRecipe.expiryDate.toString()}
               onChangeText={(textVal) =>
                 setNewRecipe((prev) => {
                   return { ...prev, expiryDate: unitsToMilliseconds(Number(textVal), expiryDateUnit) };
                 })
               }
             />
-
-
             <StyledDropDown
               className="w-1/4"
               mode={"flat"}
@@ -154,6 +162,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
               label=<Text><MaterialCommunityIcons name={"thermometer"} size={20} /> Cooking Temperature</Text>
               keyboardType="number-pad"
               placeholder="Ex: 4"
+              value={newRecipe.temperature.toString()}
               onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, temperature: Number(textVal) } })}
             />
             <StyledDropDown

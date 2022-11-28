@@ -29,8 +29,14 @@ function RecipeSelectCard({
   navigation,
 }: RecipeSelectCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(recipe.cookingTime);
-  const { val: edVal, unit: edUnit } = millisecondsToUnits(recipe.expiryDate);
+  const { val: ctVal, unit: ctUnit } = millisecondsToUnits(
+    recipe.cookingTime,
+    "cookingTime"
+  );
+  const { val: edVal, unit: edUnit } = millisecondsToUnits(
+    recipe.expiryDate,
+    "expiryDate"
+  );
 
   interface TextIconInterface {
     icon: string;
