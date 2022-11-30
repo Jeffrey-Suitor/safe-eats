@@ -18,9 +18,16 @@ import {
 } from "../utils/pushNotifications";
 
 export const applianceRouter = router({
-  esp32Add: publicProcedure
+  esp32Register: publicProcedure
     .input(z.object({ name: z.string(), id: z.string(), BLEId: z.string() }))
     .mutation(async ({ input }) => {
+      const applianceCheck = await prisma.appliance.findUnique({
+        where: { id: input.id },
+      });
+      if (applianceCheck != null) {
+        return applianceCheck;
+      }
+
       const appliance = await prisma.appliance.create({
         data: {
           ...defaultAppliance,
@@ -53,12 +60,15 @@ export const applianceRouter = router({
       return appliance;
     }),
 
-  get: authedProcedure.input(IdSchema).query(async ({ input }) => {
-    return await prisma.appliance.findUnique({
-      where: { id: input },
-      include: { recipe: true },
-    });
-  }),
+  get: authedProcedure
+    .input(IdSchema)
+    .output(ApplianceSchema.nullable())
+    .query(async ({ input }) => {
+      return await prisma.appliance.findUnique({
+        where: { id: input },
+        include: { recipe: true },
+      });
+    }),
 
   all: authedProcedure.query(async ({ ctx }) => {
     const appliances = await prisma.appliance.findMany({
@@ -81,28 +91,25 @@ export const applianceRouter = router({
     return await prisma.appliance.delete({ where: { id: input } });
   }),
 
-  update: authedProcedure.input(ApplianceSchema).mutation(async ({ input }) => {
-    return await prisma.appliance.update({
-      where: { id: input.id },
-      data: {
-        ...input,
-        recipe: {
-          connect: {
-            id: input.recipe?.id ? input.recipe?.id : undefined,
-          },
+  update: publicProcedure
+    .input(ApplianceWithoutRecipeSchema)
+    .mutation(async ({ input }) => {
+      return await prisma.appliance.update({
+        where: { id: input.id },
+        data: {
+          ...input,
         },
-      },
-    });
-  }),
+      });
+    }),
 
   onTemperatureUpdate: publicProcedure
     .input(IdSchema)
     .subscription(({ input: connectedApplianceId }) => {
       return observable<Temperature>((emit) => {
-        console.log("onTemperatureUpdate: observable");
         const listener = (val: unknown) => {
           const { id, temperatureC, temperatureF } =
             TemperatureWithIdSchema.parse(val);
+          console.log(id, connectedApplianceId);
           if (id === connectedApplianceId) {
             emit.next({ temperatureC, temperatureF });
           }

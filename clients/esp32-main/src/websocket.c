@@ -46,7 +46,7 @@ static void shutdown_signaler(TimerHandle_t xTimer) {
 
   ESP_LOGI(TAG, "No data received for %d seconds, signaling shutdown", WEBSOCKET_TIMEOUT);
   esp_websocket_client_stop(CLIENT);
-  xEventGroupClearBits(DeviceStatus, WEBSOCKET_CONNECTED);
+  xEventGroupClearBits(DeviceStatus, WEBSOCKET_CONNECTED | WEBSOCKET_READY);
   xTimerStart(START_TIMER, 0);
   xTimerStop(SHUTDOWN_TIMER, 0);
 }
@@ -77,7 +77,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
       vTaskResume(DefinedInDB);
       break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-      ESP_LOGD(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+    case WEBSOCKET_EVENT_CLOSED:
+      ESP_LOGE(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
       xEventGroupClearBits(DeviceStatus, WEBSOCKET_CONNECTED | WEBSOCKET_READY);
       break;
     case WEBSOCKET_EVENT_DATA:
@@ -113,7 +114,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
       requestId = strtok(NULL, "::");
       ESP_LOGI(TAG, "Request ID: %s", requestId);
 
-      if (strcmp(requestId, "appliance.esp32Add") == 0) {  // Defined in DB
+      if (strcmp(requestId, "appliance.esp32Register") == 0) {  // Defined in DB
         xEventGroupSetBits(DeviceStatus, WEBSOCKET_READY);
         ESP_LOGI(TAG, "Device is defined in DB");
       }
@@ -136,7 +137,9 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 static void DefinedInDBTask(void *pvParameters) {
   char callId[256] = "";
-  sprintf(callId, "%s::%s", ID, "appliance.add");
+  char path[] = "appliance.esp32Register";
+  char method[] = "mutation";
+  sprintf(callId, "%s::%s", ID, path);
 
   cJSON *output = cJSON_CreateObject();
   cJSON *params = cJSON_CreateObject();
@@ -144,11 +147,11 @@ static void DefinedInDBTask(void *pvParameters) {
   cJSON *appliance = cJSON_CreateObject();
 
   cJSON_AddStringToObject(output, "id", callId);
-  cJSON_AddStringToObject(output, "method", "mutation");
+  cJSON_AddStringToObject(output, "method", method);
   cJSON_AddItemToObject(output, "params", params);
 
   cJSON_AddItemToObject(params, "input", input);
-  cJSON_AddStringToObject(params, "path", "appliance.esp32Add");
+  cJSON_AddStringToObject(params, "path", path);
 
   cJSON_AddItemToObject(input, "json", appliance);
 
@@ -176,7 +179,7 @@ static void DefinedInDBTask(void *pvParameters) {
     char *json_str = cJSON_Print(output);
     int len = strlen(json_str);
     int sent = esp_websocket_client_send_text(CLIENT, json_str, len, portMAX_DELAY);
-    ESP_LOGI(TAG, "mutation --> appliance.add = %d bytes", sent);
+    ESP_LOGI(TAG, "%s --> %s = %d bytes", method, path, sent);
     cJSON_free(json_str);
     vTaskDelay(pdMS_TO_TICKS(5000));
   }

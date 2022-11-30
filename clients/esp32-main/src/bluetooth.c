@@ -111,9 +111,9 @@ static int SetWifiBLECmd(uint16_t conn_handle, uint16_t attr_handle, struct ble_
   char *incoming_data = (char *)ctxt->om->om_data;
   ESP_LOGI(TAG, "incoming message: %s\n", incoming_data);
   cJSON *payload = cJSON_Parse(incoming_data);
+  cJSON *name = cJSON_GetObjectItem(payload, "name");
   cJSON *ssid = cJSON_GetObjectItem(payload, "ssid");
-  cJSON *pass = cJSON_GetObjectItem(payload, "name");
-  cJSON *name = cJSON_GetObjectItem(payload, "pass");
+  cJSON *pass = cJSON_GetObjectItem(payload, "pass");
   wifi_ssid = ssid->valuestring;
   wifi_pass = pass->valuestring;
   ble_device_name = name->valuestring;

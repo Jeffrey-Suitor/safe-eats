@@ -36,10 +36,23 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
   const { data: appliance, isLoading } =
     trpc.appliance.get.useQuery(applianceId);
 
-  const { mutate } = trpc.appliance[modifyType].useMutation({
-    async onSuccess() {
-      utils.appliance.all.invalidate();
-      navigation.navigate("Appliances");
+  const {
+    allDevices,
+    scan,
+    requestPermissions,
+    connect,
+    connectedDevice,
+    ServiceUuid,
+    CharacteristicUuids,
+  } = useBLE();
+
+  const { mutate } = trpc.appliance.update.useMutation({
+    async onSuccess(data) {
+      console.log(data);
+      utils.appliance.get.invalidate(data.id);
+      if (!isConnected) {
+        navigation.navigate("Appliances");
+      }
     },
   });
 
@@ -66,8 +79,6 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
       </View>
     );
   }
-  const { allDevices, scan, requestPermissions, connect, connectedDevice } =
-    useBLE();
 
   useEffect(() => {
     requestPermissions((isGranted) => {
@@ -96,9 +107,9 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
             <StyledTextInput
               label="Appliance Name"
               placeholder={appliance.name}
-              onChangeText={() => {
+              onChangeText={(text) => {
                 setApplianceInfo((prev) => {
-                  return { ...prev, name: appliance.name };
+                  return { ...prev, name: text };
                 });
               }}
             />
@@ -181,6 +192,7 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
               setShowErrors(true);
               return;
             }
+
             mutate({
               ...appliance,
               name: applianceInfo.name,
@@ -188,17 +200,16 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
             });
 
             if (isConnected) {
+              console.log(applianceInfo);
               connectedDevice
-                .writeCharacteristicWithoutResponseForService(
-                  (0x180a).toString(),
-                  (0x0000).toString(),
+                .writeCharacteristicWithResponseForService(
+                  ServiceUuid,
+                  CharacteristicUuids.set_wifi_uuid,
                   Base64.encode(JSON.stringify(applianceInfo))
                 )
                 .then(() => {
                   navigation.navigate("Appliances");
                 });
-            } else {
-              navigation.navigate("Appliances");
             }
           }}
         >

@@ -29,7 +29,7 @@ const seedQrCodes = async () => {
 const seedAppliances = async () => {
   const appliance1 = await prisma.appliance.create({
     data: {
-      id: "98:CD:AC:F7:EA:58",
+      id: "98CDACF7EA58",
       BLEId: "98:CD:AC:F7:EA:5A",
       name: "Toaster Oven",
       type: "Toaster_Oven",

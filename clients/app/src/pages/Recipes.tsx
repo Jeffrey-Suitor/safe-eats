@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";
 import { ActivityIndicator } from "react-native-paper";
-import HomeSpeedDial from "../components/HomeSpeedDial";
+import SpeedDial from "../components/SpeedDial";
 import RecipeCard from "../components/RecipeCard";
 
 export type NavigationProps = NativeStackScreenProps<
@@ -44,7 +44,7 @@ function RecipesPage({ navigation }: NavigationProps) {
             <RecipeCard recipe={recipe} navigation={navigation} />
           )}
         />
-        <HomeSpeedDial navigation={navigation} />
+        <SpeedDial navigation={navigation} />
       </View>
     </SafeAreaView>
   );

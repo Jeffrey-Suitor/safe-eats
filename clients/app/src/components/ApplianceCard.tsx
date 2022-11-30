@@ -41,6 +41,8 @@ function ApplianceTemperatureDial({
   const applianceTemperature =
     temperatureUnit === "C" ? temp.temperatureC : temp.temperatureF;
 
+  console.log(temp.temperatureC);
+
   const strokeColorConfig =
     recipeTemperature === undefined || cookingStartTime === null
       ? [
@@ -80,7 +82,7 @@ function ApplianceTemperatureDial({
           ? undefined
           : `/${recipeTemperature}°${temperatureUnit}`
       }
-      // strokeColorConfig={strokeColorConfig}
+      // strokeColorConfig={strokeColorConfig} // TODO: This is currently crashing on android
       titleColor="#000000"
       progressValueColor={valueColor(applianceTemperature, recipeTemperature)}
     />

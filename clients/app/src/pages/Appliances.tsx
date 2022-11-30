@@ -2,7 +2,7 @@ import { FlatList, SafeAreaView, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import HomeSpeedDial from "../components/HomeSpeedDial";
+import SpeedDial from "../components/SpeedDial";
 import { trpc } from "../utils/trpc";
 import { Button, Text, ActivityIndicator } from "react-native-paper";
 import ApplianceCard from "../components/ApplianceCard";
@@ -108,7 +108,7 @@ function AppliancesPage({ navigation }: NavigationProps) {
             />
           )}
         />
-        <HomeSpeedDial navigation={navigation} />
+        <SpeedDial navigation={navigation} />
       </View>
     </SafeAreaView>
   );

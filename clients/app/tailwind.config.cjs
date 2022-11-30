@@ -5,9 +5,21 @@ module.exports = {
     extend: {
       colors: {
         danger: "#ff6961",
-        primary: "#FF8A3C",
-      },
-    },
+        primary: {
+          DEFAULT: '#FFA265',
+          '50': '#FFFFFF',
+          '100': '#FFFFFF',
+          '200': '#FFECDF',
+          '300': '#FFD3B7',
+          '400': '#FFBB8E',
+          '500': '#FFA265',
+          '600': '#FF802D',
+          '700': '#F46100',
+          '800': '#BC4A00',
+          '900': '#843400'
+        },
+      }
+    }
   },
   plugins: [],
 };

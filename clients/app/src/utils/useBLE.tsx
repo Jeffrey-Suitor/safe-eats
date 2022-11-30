@@ -12,6 +12,10 @@ import DeviceInfo from "react-native-device-info";
 import Base64 from "base-64";
 
 const bleManager = new BleManager();
+export const ServiceUuid = "0000180a-0000-1000-8000-00805f9b34fb";
+export const CharacteristicUuids = {
+  set_wifi_uuid: "00000000-0000-1000-8000-00805f9b34fb",
+};
 
 type VoidCallback = (result: boolean) => void;
 
@@ -22,6 +26,10 @@ interface BluetoothLowEnergyApi {
   disconnect: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
+  ServiceUuid: string;
+  CharacteristicUuids: {
+    set_wifi_uuid: string;
+  };
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -95,7 +103,9 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const connect = async (device: Device) => {
     try {
-      const deviceConnection = await bleManager.connectToDevice(device.id);
+      const deviceConnection = await bleManager.connectToDevice(device.id, {
+        requestMTU: 512,
+      });
       setConnectedDevice(deviceConnection);
       await deviceConnection.discoverAllServicesAndCharacteristics();
       bleManager.stopDeviceScan();
@@ -118,6 +128,8 @@ function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectedDevice,
     disconnect,
+    ServiceUuid,
+    CharacteristicUuids,
   };
 }
 
