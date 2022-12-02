@@ -4,8 +4,7 @@ import {
   unitToLong,
 } from "@safe-eats/helpers/timeConverter";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Text } from "react-native-paper";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 
 interface RecipeInfoProps {
   recipe: Recipe;

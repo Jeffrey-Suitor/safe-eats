@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@config-plugins/react-native-ble-plx": "^4.0.0",
+    "@headlessui/react": "^1.7.4",
+    "@heroicons/react": "^2.0.13",
     "@react-navigation/devtools": "^6.0.10",
     "@react-navigation/material-bottom-tabs": "^6.2.4",
     "@react-navigation/native": "^6.0.13",
@@ -58,6 +60,8 @@
     "react-native-ble-plx": "^2.0.3",
     "react-native-circular-progress-indicator": "^4.4.0",
     "react-native-device-info": "^10.3.0",
+    "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-material-ripple": "^0.9.1",
     "react-native-paper": "^5.0.0-rc.6",
     "react-native-paper-dropdown": "^1.0.7",
     "react-native-paper-toast": "github:Jeffrey-Suitor/react-native-paper-toast",
@@ -71,6 +75,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
+    "@tailwindcss/forms": "^0.5.3",
     "@types/react": "~18.0.24",
     "@types/react-native": "~0.70.6",
     "babel-plugin-transform-inline-environment-variables": "^0.4.4",

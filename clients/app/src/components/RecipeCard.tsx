@@ -1,12 +1,13 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Recipe } from "@safe-eats/types/recipeTypes";
 import { View, Text } from "react-native";
-import { Button, TouchableRipple } from "react-native-paper";
+import { TouchableRipple } from "react-native-paper";
 import { RootStackParamList } from "../_app";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import DeleteRecipeButton from "./DeleteRecipeButton";
 import RecipeInfo from "./RecipeInfo";
+import IconButton from "./IconButton";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -43,9 +44,10 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
             <View className="gap-y-4 pt-4">
               <RecipeInfo recipe={recipe} containerClassName="flex gap-4" />
               <View className="flex w-full flex-row justify-around">
-                <Button
+                <IconButton
+                  color="black"
+                  classes="shadow-stone-40 rounded-2xl p-3 bg-orange-200"
                   icon="square-edit-outline"
-                  mode="outlined"
                   onPress={() =>
                     navigation.push("ModifyRecipe", {
                       recipe: recipe,
@@ -54,11 +56,10 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
                   }
                 >
                   Edit
-                </Button>
+                </IconButton>
                 <DeleteRecipeButton
                   recipe={recipe}
                   iconSize={24}
-                  iconMode="contained-tonal"
                   showText={true}
                 />
               </View>

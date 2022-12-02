@@ -2,9 +2,9 @@ import { RootStackParamList } from "../_app";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, View } from "react-native";
+import { SafeAreaView, View, Text } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import { Button, Text } from "react-native-paper";
+import Button from "../components/Button";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,
@@ -58,9 +58,7 @@ function ScanPage({ route, navigation }: NavigationProps) {
           onBarCodeScanned={scanned ? undefined : onScanned}
           className="grow"
         />
-        <Button mode="contained" onPress={() => navigation.pop()}>
-          Cancel Scan
-        </Button>
+        <Button onPress={() => navigation.pop()}>Cancel Scan</Button>
       </View>
     </SafeAreaView>
   );

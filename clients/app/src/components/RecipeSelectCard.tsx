@@ -111,7 +111,6 @@ function RecipeSelectCard({
               <DeleteRecipeButton
                 iconSize={20}
                 showText={false}
-                iconMode={"contained-tonal"}
                 recipe={recipe}
               />
             </View>

@@ -1,9 +1,8 @@
-import { SafeAreaView, View, FlatList } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { SafeAreaView, View, FlatList, ActivityIndicator } from "react-native";
+import { useCallback, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";
-import { ActivityIndicator } from "react-native-paper";
 import SpeedDial from "../components/SpeedDial";
 import RecipeCard from "../components/RecipeCard";
 

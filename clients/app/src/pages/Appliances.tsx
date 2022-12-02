@@ -1,14 +1,20 @@
-import { FlatList, SafeAreaView, View } from "react-native";
+import {
+  FlatList,
+  SafeAreaView,
+  View,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import SpeedDial from "../components/SpeedDial";
 import { trpc } from "../utils/trpc";
-import { Button, Text, ActivityIndicator } from "react-native-paper";
 import ApplianceCard from "../components/ApplianceCard";
 import { Appliance } from "@safe-eats/types/applianceTypes";
 import { useModal } from "../components/ModalContext";
 import { useToast } from "react-native-paper-toast";
+import Button from "../components/Button";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,
@@ -47,11 +53,10 @@ function AppliancesPage({ navigation }: NavigationProps) {
   useEffect(() => {
     setModalContent(
       <View className="flex flex-grow items-center justify-center gap-4 bg-white p-4 pt-2">
-        <Text className="text-center" variant="titleMedium">
+        <Text className="text-center text-lg">
           Are you sure you want to delete this appliance?
         </Text>
         <Button
-          mode="contained"
           onPress={() => {
             if (currentAppliance === null) {
               console.error("currentAppliance is null");
@@ -67,9 +72,7 @@ function AppliancesPage({ navigation }: NavigationProps) {
         >
           Delete
         </Button>
-        <Button mode="contained-tonal" onPress={() => setModalVisible(false)}>
-          Cancel
-        </Button>
+        <Button onPress={() => setModalVisible(false)}>Cancel</Button>
       </View>
     );
   }, [currentAppliance]);

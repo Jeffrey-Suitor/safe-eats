@@ -1,5 +1,5 @@
-import { Text, HelperText, TextInput, Button } from "react-native-paper";
-import { SafeAreaView, View } from "react-native";
+import {HelperText, } from "react-native-paper";
+import { SafeAreaView, View, Text, TextInput } from "react-native";
 import React, { useEffect } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
@@ -16,7 +16,7 @@ import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
 import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
 import { cookingTimeUnits, expiryDateUnits, millisecondsToUnits,unitsToMilliseconds } from "@safe-eats/helpers/timeConverter";
 import { capitalize } from "@safe-eats/helpers/stringHelpers";
-
+import Button from "../components/Button"
 const StyledTextInput = styled(TextInput);
 const StyledDropDown = styled(DropDown);
 
@@ -57,7 +57,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
 
   return (
     <SafeAreaView>
-      <View className="h-full w-full p-4">
+      {/* <View className="h-full w-full p-4">
         <View>
           <StyledTextInput
             label=<Text><MaterialCommunityIcons name={"chef-hat"} size={20} /> Recipe</Text>
@@ -210,7 +210,7 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
         }}>
           {`${capitalize(modifyType)} Recipe`}
         </Button>
-      </View>
+      </View> */}
     </SafeAreaView >
   );
 };

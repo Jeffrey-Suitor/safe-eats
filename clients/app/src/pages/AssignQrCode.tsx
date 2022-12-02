@@ -1,13 +1,19 @@
-import { FlatList, SafeAreaView, View } from "react-native";
+import {
+  FlatList,
+  SafeAreaView,
+  View,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import { useCallback, useState } from "react";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { trpc } from "../utils/trpc";
-import { Text, ActivityIndicator, Button } from "react-native-paper";
 import { Recipe } from "@safe-eats/types/recipeTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RecipeSelectCard from "../components/RecipeSelectCard";
 import { useToast } from "react-native-paper-toast";
+import Button from "../components/Button";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,
@@ -66,7 +72,7 @@ function AssignQrCodePage({ navigation, route }: NavigationProps) {
   return (
     <SafeAreaView>
       <View className="h-full w-full p-4">
-        <Text variant="titleSmall">
+        <Text className="text-sm">
           <MaterialCommunityIcons name="qrcode" size={24} />
           {` ${qrCode}`}
         </Text>
@@ -91,7 +97,6 @@ function AssignQrCodePage({ navigation, route }: NavigationProps) {
 
         <Button
           disabled={!currentRecipe}
-          mode="contained"
           onPress={() => {
             if (currentRecipe === null) {
               console.error("currentRecipe is null");

@@ -1,4 +1,3 @@
-import { IconButton } from "react-native-paper";
 import { RootStackParamList } from "../_app";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState } from "react";
@@ -6,6 +5,7 @@ import { defaultRecipe } from "@safe-eats/types/recipeTypes";
 import { View, Text, TouchableOpacity } from "react-native";
 import { styled } from "nativewind";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import IconButton from "./IconButton";
 
 export type NavigationProps =
   | NativeStackScreenProps<RootStackParamList, "Appliances">
@@ -14,8 +14,6 @@ export type NavigationProps =
 interface SpeedDialProps {
   navigation: NavigationProps["navigation"];
 }
-
-const StyledIconButton = styled(IconButton);
 
 function SpeedDial({ navigation }: SpeedDialProps) {
   const [open, setOpen] = useState(false);
@@ -61,22 +59,15 @@ function SpeedDial({ navigation }: SpeedDialProps) {
         return (
           <TouchableOpacity className="flex flex-row items-center justify-end align-middle">
             {buttonValues.label && (
-              <Text className="bg-red mr-2 p-2 shadow-sm shadow-stone-400">
+              <Text className="mr-2 p-3 shadow-sm shadow-stone-400">
                 {buttonValues.label}
               </Text>
             )}
-
-            <MaterialCommunityIcons.Button
-              className="shadow-stone-40 rounded-2xl bg-primary p-3 shadow-lg"
+            <IconButton
+              classes="shadow-stone-40 rounded-2xl bg-orange-400 p-3 shadow-lg"
               size={30}
-              name={buttonValues.icon as any}
+              icon={buttonValues.icon as any}
               onPress={buttonValues.onPress}
-              backgroundColor="#FFFFFF00"
-              underlayColor="#FFFFFF00"
-              borderRadius={0}
-              iconStyle={{
-                marginRight: 0,
-              }}
             />
           </TouchableOpacity>
         );

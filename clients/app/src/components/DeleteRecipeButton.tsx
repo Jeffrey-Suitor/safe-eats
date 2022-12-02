@@ -2,22 +2,21 @@ import { Recipe } from "@safe-eats/types/recipeTypes";
 import { useToast } from "react-native-paper-toast";
 import { trpc } from "../utils/trpc";
 import { useModal } from "./ModalContext";
-import { View } from "react-native";
-import { Button, Text, IconButton } from "react-native-paper";
+import { View, TouchableOpacity, Text } from "react-native";
 import { useCallback } from "react";
+import IconButton from "./IconButton";
+import Button from "./Button";
 
 interface DeleteRecipeButtonProps {
   recipe: Recipe;
   iconSize: number;
   showText: boolean;
-  iconMode: string;
 }
 
 function DeleteRecipeButton({
   recipe,
   iconSize,
   showText,
-  iconMode,
 }: DeleteRecipeButtonProps) {
   const toaster = useToast();
   const utils = trpc.useContext();
@@ -39,30 +38,35 @@ function DeleteRecipeButton({
 
   const onPress = useCallback(() => {
     setModalContent(
-      <View className="flex flex-grow items-center justify-center gap-4 bg-white p-4 pt-2">
-        <Text className="text-center" variant="titleMedium">
+      <View className="flex h-max items-center justify-between gap-y-5 bg-white p-4">
+        <Text className="text-md  font-semibold">
           Are you sure you want to delete this recipe?
         </Text>
-        <Button
-          mode="contained"
-          onPress={() => {
-            if (recipe === null) {
-              console.error("currentRecipe is null");
-              return;
-            }
-            if (recipe.id === undefined) {
-              console.error("currentRecipe.id is null");
-              return;
-            }
-            deleteRecipe(recipe.id);
-            setModalVisible(false);
-          }}
-        >
-          Delete
-        </Button>
-        <Button mode="contained-tonal" onPress={() => setModalVisible(false)}>
-          Cancel
-        </Button>
+        <View className="flex flex-row gap-x-10">
+          <Button
+            className="text-md  rounded-xl bg-orange-400 p-4 font-semibold"
+            onPress={() => setModalVisible(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="text-md  rounded-xl bg-red-400 p-4 font-semibold text-white"
+            onPress={() => {
+              if (recipe === null) {
+                console.error("currentRecipe is null");
+                return;
+              }
+              if (recipe.id === undefined) {
+                console.error("currentRecipe.id is null");
+                return;
+              }
+              deleteRecipe(recipe.id);
+              setModalVisible(false);
+            }}
+          >
+            Delete
+          </Button>
+        </View>
       </View>
     );
     setModalVisible(true);
@@ -70,15 +74,20 @@ function DeleteRecipeButton({
 
   if (showText) {
     return (
-      <Button mode={iconMode as any} onPress={onPress} icon="trash-can-outline">
+      <IconButton
+        classes="shadow-stone-40 rounded-2xl p-3 bg-red-400"
+        onPress={onPress}
+        icon="trash-can-outline"
+        textClasses="text-white"
+      >
         Delete
-      </Button>
+      </IconButton>
     );
   } else {
     return (
       <IconButton
+        classes="shadow-stone-40 rounded-2xl p-3 bg-red-400"
         icon="trash-can-outline"
-        mode={iconMode as any}
         size={iconSize}
         onPress={onPress}
       />

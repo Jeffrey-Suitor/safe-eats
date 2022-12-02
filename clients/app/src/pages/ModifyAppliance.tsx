@@ -1,5 +1,4 @@
 import {
-  Text,
   ActivityIndicator,
   TextInput,
   HelperText,
@@ -48,7 +47,6 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
 
   const { mutate } = trpc.appliance.update.useMutation({
     async onSuccess(data) {
-      console.log(data);
       utils.appliance.get.invalidate(data.id);
       if (!isConnected) {
         navigation.navigate("Appliances");
@@ -200,7 +198,6 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
             });
 
             if (isConnected) {
-              console.log(applianceInfo);
               connectedDevice
                 .writeCharacteristicWithResponseForService(
                   ServiceUuid,

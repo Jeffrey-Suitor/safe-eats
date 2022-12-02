@@ -1,11 +1,5 @@
-import { View } from "react-native";
-import {
-  Text,
-  TouchableRipple,
-  Button,
-  IconButton,
-  ActivityIndicator,
-} from "react-native-paper";
+import { View, Text, ActivityIndicator } from "react-native";
+import { TouchableRipple } from "react-native-paper";
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
@@ -15,6 +9,7 @@ import CircularProgress from "react-native-circular-progress-indicator";
 import { trpc } from "../utils/trpc";
 import { Recipe } from "@safe-eats/types/recipeTypes";
 import { Appliance } from "@safe-eats/types/applianceTypes";
+import IconButton from "./IconButton";
 interface ApplianceTemperatureDialProps {
   appliance: Appliance;
 }
@@ -40,8 +35,6 @@ function ApplianceTemperatureDial({
   const { temperature: recipeTemperature, temperatureUnit } = recipe || {};
   const applianceTemperature =
     temperatureUnit === "C" ? temp.temperatureC : temp.temperatureF;
-
-  console.log(temp.temperatureC);
 
   const strokeColorConfig =
     recipeTemperature === undefined || cookingStartTime === null
@@ -202,7 +195,7 @@ function ApplianceCard({
         <View className="p-4">
           <View className="flex-row justify-between pb-2">
             <View></View>
-            <Text variant="titleLarge" className="text-primary">
+            <Text className="text-lg text-orange-400">
               <MaterialCommunityIcons name={"toaster-oven"} size={24} />
               {` ${name}`}
             </Text>
@@ -257,9 +250,10 @@ function ApplianceCard({
               )}
 
               <View className="flex w-full flex-row justify-around">
-                <Button
+                <IconButton
+                  color="black"
+                  classes="shadow-stone-40 rounded-2xl p-3 bg-orange-400"
                   icon="square-edit-outline"
-                  mode="outlined"
                   onPress={() =>
                     navigation.push("ModifyAppliance", {
                       applianceId: id,
@@ -268,14 +262,15 @@ function ApplianceCard({
                   }
                 >
                   Edit
-                </Button>
-                <Button
-                  icon="trash-can-outline"
-                  mode="contained-tonal"
+                </IconButton>
+
+                <IconButton
+                  classes="shadow-stone-40 rounded-2xl p-3 bg-red-400"
                   onPress={onDelete}
+                  icon="trash-can-outline"
                 >
                   Delete
-                </Button>
+                </IconButton>
               </View>
             </View>
           )}
