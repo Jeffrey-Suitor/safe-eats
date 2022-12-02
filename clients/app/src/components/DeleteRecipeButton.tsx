@@ -4,8 +4,7 @@ import { trpc } from "../utils/trpc";
 import { useModal } from "./ModalContext";
 import { View, TouchableOpacity, Text } from "react-native";
 import { useCallback } from "react";
-import IconButton from "./IconButton";
-import Button from "./Button";
+import { Button, IconButton } from "./Buttons";
 
 interface DeleteRecipeButtonProps {
   recipe: Recipe;

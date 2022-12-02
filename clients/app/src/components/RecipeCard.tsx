@@ -7,7 +7,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import DeleteRecipeButton from "./DeleteRecipeButton";
 import RecipeInfo from "./RecipeInfo";
-import IconButton from "./IconButton";
+import { IconButton } from "../components/Buttons";
 
 interface RecipeCardProps {
   recipe: Recipe;

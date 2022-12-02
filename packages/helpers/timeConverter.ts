@@ -55,14 +55,7 @@ export const millisecondsToUnits = (
     .filter((v, i, a) => a.indexOf(v) === i); // Get only unique values
 
   for (const unit of units) {
-    console.log(
-      seconds,
-      unit,
-      unitsInMilliseconds[unit],
-      seconds % unitsInMilliseconds[unit]
-    );
     if (seconds % unitsInMilliseconds[unit] === 0) {
-      console.log(unit);
       return {
         val: seconds / unitsInMilliseconds[unit],
         unit,

@@ -14,7 +14,7 @@ import ApplianceCard from "../components/ApplianceCard";
 import { Appliance } from "@safe-eats/types/applianceTypes";
 import { useModal } from "../components/ModalContext";
 import { useToast } from "react-native-paper-toast";
-import Button from "../components/Button";
+import { Button } from "../components/Buttons";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,

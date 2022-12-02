@@ -13,7 +13,7 @@ import { Recipe } from "@safe-eats/types/recipeTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RecipeSelectCard from "../components/RecipeSelectCard";
 import { useToast } from "react-native-paper-toast";
-import Button from "../components/Button";
+import { Button } from "../components/Buttons";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,

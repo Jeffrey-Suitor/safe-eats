@@ -1,5 +1,6 @@
 import { styled } from "nativewind";
 import { Pressable, PressableProps, Text, TextProps } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type PropsWithoutConflicts = Omit<PressableProps, "children" | "style"> &
   Omit<TextProps, "onLongPress" | "onPress" | "onPressIn" | "onPressOut">;
@@ -10,7 +11,7 @@ interface ButtonProps extends PropsWithoutConflicts {
 
 const TwText = styled(Text);
 
-function Button({
+export const Button = ({
   className,
   children,
   android_disableSound,
@@ -26,7 +27,7 @@ function Button({
   pressRetentionOffset,
   testOnly_pressed,
   ...props
-}: ButtonProps) {
+}: ButtonProps) => {
   return (
     <Pressable
       android_disableSound={android_disableSound}
@@ -47,6 +48,43 @@ function Button({
       </TwText>
     </Pressable>
   );
+};
+
+interface IconButtonProps {
+  icon: any;
+  onPress: () => void;
+  classes?: string;
+  children?: string;
+  size?: number;
+  color?: string;
+  disabled?: boolean;
+  textClasses?: string;
 }
 
-export default Button;
+export const IconButton = ({
+  icon,
+  onPress,
+  classes,
+  children,
+  size = 24,
+  color = "white",
+  disabled = false,
+  textClasses = "",
+}: IconButtonProps) => (
+  <MaterialCommunityIcons.Button
+    className={classes}
+    name={icon}
+    size={size}
+    onPress={onPress}
+    backgroundColor="#FFFFFF00"
+    underlayColor="#FFFFFF00"
+    borderRadius={0}
+    color={color}
+    disabled={disabled}
+    iconStyle={{
+      marginRight: children ? 10 : 0,
+    }}
+  >
+    <Text className={textClasses}>{children}</Text>
+  </MaterialCommunityIcons.Button>
+);

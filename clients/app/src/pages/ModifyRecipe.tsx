@@ -1,29 +1,44 @@
-import {HelperText, } from "react-native-paper";
-import { SafeAreaView, View, Text, TextInput } from "react-native";
+import { HelperText } from "react-native-paper";
+import { SafeAreaView, View, Text } from "react-native";
 import React, { useEffect } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { useState } from "react";
-import {
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { trpc } from "../utils/trpc";
-import DropDown from "react-native-paper-dropdown";
-import { styled } from 'nativewind';
-import type {Recipe} from "@safe-eats/types/recipeTypes";
+import type { Recipe } from "@safe-eats/types/recipeTypes";
 import { temperatureUnits, RecipeSchema } from "@safe-eats/types/recipeTypes";
-import { applianceTypes, applianceModes } from "@safe-eats/types/applianceConstants";
-import { cookingTimeUnits, expiryDateUnits, millisecondsToUnits,unitsToMilliseconds } from "@safe-eats/helpers/timeConverter";
+import {
+  applianceTypes,
+  applianceModes,
+} from "@safe-eats/types/applianceConstants";
+import {
+  cookingTimeUnits,
+  expiryDateUnits,
+  millisecondsToUnits,
+  unitsToMilliseconds,
+} from "@safe-eats/helpers/timeConverter";
 import { capitalize } from "@safe-eats/helpers/stringHelpers";
-import Button from "../components/Button"
-const StyledTextInput = styled(TextInput);
-const StyledDropDown = styled(DropDown);
+import { Button } from "../components/Buttons";
+import {
+  TextInput,
+  DropDown,
+  TextInputWithDropDown,
+} from "../components/Inputs";
 
- export type NavigationProps = NativeStackScreenProps<RootStackParamList, "ModifyRecipe">;
-const dropDownValues = ["cookingTime", "expiryDate", "appliance", "temperatureUnit", "applianceMode"] as const;
+export type NavigationProps = NativeStackScreenProps<
+  RootStackParamList,
+  "ModifyRecipe"
+>;
+const dropDownValues = [
+  "cookingTime",
+  "expiryDate",
+  "appliance",
+  "temperatureUnit",
+  "applianceMode",
+] as const;
 
-function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
+function ModifyRecipePage({ navigation, route }: NavigationProps) {
   const { recipe, modifyType } = route.params;
   const { mutate } = trpc.recipe[modifyType].useMutation({
     async onSuccess() {
@@ -31,21 +46,29 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
     },
   });
 
-  const initialCookingTime = millisecondsToUnits(recipe.cookingTime, "cookingTime");
-  const initialExpiryDate = millisecondsToUnits(recipe.expiryDate, "expiryDate");
+  const initialCookingTime = millisecondsToUnits(
+    recipe.cookingTime,
+    "cookingTime"
+  );
+  const initialExpiryDate = millisecondsToUnits(
+    recipe.expiryDate,
+    "expiryDate"
+  );
 
-  const [showDropDown, setShowDropDown] = useState<typeof dropDownValues[number] | null>(null);
+  const [showDropDown, setShowDropDown] = useState<
+    typeof dropDownValues[number] | null
+  >(null);
   const [showErrors, setShowErrors] = useState(false);
 
-    const [cookingTimeUnit, setCookingTimeUnit] =
-    useState<typeof cookingTimeUnits[number]>(initialCookingTime.unit as typeof cookingTimeUnits[number]);
+  const [cookingTimeUnit, setCookingTimeUnit] = useState<
+    typeof cookingTimeUnits[number]
+  >(initialCookingTime.unit as typeof cookingTimeUnits[number]);
 
-  const [expiryDateUnit, setExpiryDateUnit] =
-    useState<typeof expiryDateUnits[number]>(initialExpiryDate.unit as typeof expiryDateUnits[number]);
+  const [expiryDateUnit, setExpiryDateUnit] = useState<
+    typeof expiryDateUnits[number]
+  >(initialExpiryDate.unit as typeof expiryDateUnits[number]);
 
   const [newRecipe, setNewRecipe] = useState<Recipe>(recipe);
-
-
 
   const [formComplete, setFormComplete] = useState(false);
 
@@ -54,75 +77,122 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
     setFormComplete(result.success);
   }, [newRecipe]);
 
-
   return (
     <SafeAreaView>
-      {/* <View className="h-full w-full p-4">
-        <View>
-          <StyledTextInput
-            label=<Text><MaterialCommunityIcons name={"chef-hat"} size={20} /> Recipe</Text>
-            placeholder="Ex: Chicken Alfredo"
-            value={newRecipe.name}
-            onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, name: textVal } })}
+      <View className="h-full w-full p-4">
+        <TextInput
+          label="Recipe"
+          value={newRecipe.name}
+          onChangeText={(name) =>
+            setNewRecipe((prev) => {
+              return { ...prev, name };
+            })
+          }
+          errorText="Please enter a recipe name"
+          showError={showErrors && newRecipe.name === ""}
+        />
+
+        <TextInput
+          label="Description"
+          value={newRecipe.description}
+          onChangeText={(description) =>
+            setNewRecipe((prev) => {
+              return { ...prev, description };
+            })
+          }
+          errorText="Please enter a description"
+          showError={showErrors && newRecipe.description === ""}
+        />
+
+        <View className="flex flex-row">
+          <TextInput
+            label="Cooking Time"
+            value={newRecipe.cookingTime.toString()}
+            onChangeText={(cookingTime) =>
+              setNewRecipe((prev) => {
+                return {
+                  ...prev,
+                  cookingTime: unitsToMilliseconds(
+                    Number(cookingTime),
+                    cookingTimeUnit
+                  ),
+                };
+              })
+            }
+            errorText="Please enter a cooking time"
+            showError={showErrors && newRecipe.cookingTime === 0}
           />
-          <HelperText type="error" visible={showErrors && newRecipe.name === ""}>
-            Please enter a recipe name
-          </HelperText>
-        </View>
-
-        <View>
-          <StyledTextInput
-            label=<Text><MaterialIcons name={"description"} size={20} /> Description</Text>
-            placeholder="Ex: Mom's favourite recipe"
-            value={newRecipe.description}
-            onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, description: textVal } })}
+          <DropDown
+            label="CookingTimeUnit"
+            selectedOption={cookingTimeUnit}
+            options={cookingTimeUnits as unknown as string[]}
+            showDropDown={showDropDown === "cookingTime"}
+            setShowDropDown={() =>
+              setShowDropDown(
+                showDropDown === "cookingTime" ? null : "cookingTime"
+              )
+            }
+            onChange={(cookingTimeUnit) =>
+              setCookingTimeUnit(
+                cookingTimeUnit as typeof cookingTimeUnits[number]
+              )
+            }
           />
-          <HelperText type="error" visible={showErrors && newRecipe.description === ""}>
-            Please enter a recipe description
-          </HelperText>
         </View>
 
-        <View>
-          <View className="flex flex-row">
-            <StyledTextInput
-              className="flex-grow mr-4"
-              keyboardType="number-pad"
-              label=<Text><MaterialCommunityIcons name={"clock-time-five-outline"} size={20} /> Cooking Time</Text>
-              placeholder="Ex: 10"
-              value={newRecipe.cookingTime.toString()}
-              onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, cookingTime: unitsToMilliseconds(Number(textVal), cookingTimeUnit) } })}
-            />
-            <StyledDropDown
-              className="w-1/4"
-              mode={"flat"}
-              visible={showDropDown === "cookingTime"}
-              showDropDown={() => setShowDropDown("cookingTime")}
-              onDismiss={() => setShowDropDown(null)}
-              value={cookingTimeUnit}
-              setValue={setCookingTimeUnit}
-              list={cookingTimeUnits.map(unit => { return { label: unit, value: unit } })}
-            />
-          </View>
-          <HelperText type="error" visible={showErrors && newRecipe.cookingTime === 0}>
-            Please enter a cooking time
-          </HelperText>
+        <View className="flex flex-row">
+          <TextInputWithDropDown
+            label="Cooking Time"
+            value={newRecipe.cookingTime.toString()}
+            onChangeText={(cookingTime) =>
+              setNewRecipe((prev) => {
+                return {
+                  ...prev,
+                  cookingTime: unitsToMilliseconds(
+                    Number(cookingTime),
+                    cookingTimeUnit
+                  ),
+                };
+              })
+            }
+            errorText="Please enter a cooking time"
+            showError={showErrors && newRecipe.cookingTime === 0}
+            selectedOption={cookingTimeUnit}
+            options={cookingTimeUnits as unknown as string[]}
+            showDropDown={showDropDown === "cookingTime"}
+            setShowDropDown={() =>
+              setShowDropDown(
+                showDropDown === "cookingTime" ? null : "cookingTime"
+              )
+            }
+            onChange={(cookingTimeUnit) =>
+              setCookingTimeUnit(
+                cookingTimeUnit as typeof cookingTimeUnits[number]
+              )
+            }
+          />
         </View>
 
-        <View>
-          <View className="flex flex-row">
-            <StyledTextInput
-              className="flex-grow mr-4"
-              keyboardType="number-pad"
-              label=<Text><MaterialCommunityIcons name={"calendar-month-outline"} size={20} /> Expiry Date</Text>
-              placeholder="Ex: 4"
-              value={newRecipe.expiryDate.toString()}
-              onChangeText={(textVal) =>
-                setNewRecipe((prev) => {
-                  return { ...prev, expiryDate: unitsToMilliseconds(Number(textVal), expiryDateUnit) };
-                })
-              }
-            />
-            <StyledDropDown
+        <View className="flex flex-row">
+          <TextInput
+            label="Expiry Date"
+            value={newRecipe.expiryDate.toString()}
+            onChangeText={(expiryDate) =>
+              setNewRecipe((prev) => {
+                return {
+                  ...prev,
+                  expiryDate: unitsToMilliseconds(
+                    Number(expiryDate),
+                    expiryDateUnit
+                  ),
+                };
+              })
+            }
+            errorText="Please enter an expiry date"
+            showError={showErrors && newRecipe.expiryDate === 0}
+          />
+
+          {/* <StyledDropDown
               className="w-1/4"
               mode={"flat"}
               visible={showDropDown === "expiryDate"}
@@ -131,14 +201,10 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
               value={expiryDateUnit}
               setValue={setExpiryDateUnit}
               list={expiryDateUnits.map(unit => { return { label: unit, value: unit } })}
-            />
-          </View>
-          <HelperText type="error" visible={showErrors && newRecipe.expiryDate === 0}>
-            Please enter an expiry date
-          </HelperText>
+            /> */}
         </View>
 
-        <View>
+        {/* <View>
           <StyledDropDown
             // @ts-ignore
             label=<Text><MaterialCommunityIcons name={"toaster-oven"} size={20} /> Appliance</Text>
@@ -153,19 +219,21 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
           <HelperText type="error" visible={false}>
             Please select an appliance
           </HelperText>
-        </View>
+        </View> */}
 
-        <View >
-          <View className="flex flex-row">
-            <StyledTextInput
-              className="flex-grow mr-4"
-              label=<Text><MaterialCommunityIcons name={"thermometer"} size={20} /> Cooking Temperature</Text>
-              keyboardType="number-pad"
-              placeholder="Ex: 4"
-              value={newRecipe.temperature.toString()}
-              onChangeText={(textVal) => setNewRecipe((prev) => { return { ...prev, temperature: Number(textVal) } })}
-            />
-            <StyledDropDown
+        <View className="flex flex-row">
+          <TextInput
+            label="Cooking Temperature"
+            value={newRecipe.temperature.toString()}
+            onChangeText={(temperature) =>
+              setNewRecipe((prev) => {
+                return { ...prev, temperature: Number(temperature) };
+              })
+            }
+            errorText="Please enter a cooking temperature"
+            showError={showErrors && newRecipe.temperature === 0}
+          />
+          {/* <StyledDropDown
               className="w-1/4"
               mode={"flat"}
               visible={showDropDown === "temperatureUnit"}
@@ -174,15 +242,10 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
               value={newRecipe.temperatureUnit}
               setValue={(value) => setNewRecipe((prev) => { return { ...prev, temperatureUnit: value } })}
               list={temperatureUnits.map(unit => { return { label: `°${unit}`, value: unit } })}
-            />
-          </View>
-
-          <HelperText type="error" visible={showErrors && newRecipe.temperature === 0}>
-            Please enter a cooking temperature
-          </HelperText>
+            /> */}
         </View>
 
-        <View>
+        {/* <View>
           <StyledDropDown
             // @ts-ignore
             label=<Text><MaterialCommunityIcons name={"record-circle-outline"} size={20} /> Appliance Mode</Text>
@@ -197,22 +260,23 @@ function ModifyRecipePage  ({ navigation, route }: NavigationProps) {
           <HelperText type="error" visible={false}>
             Please select a cooking mode
           </HelperText>
-        </View>
+        </View> */}
 
-        <Button 
-        mode="contained" 
-        className={!formComplete ? "bg-gray-500": ''}  onPress={() => {
-          if (!formComplete) {
-            setShowErrors(true)
-            return
-          }
-          mutate(newRecipe);
-        }}>
+        <Button
+          className={!formComplete ? "bg-gray-500" : ""}
+          onPress={() => {
+            if (!formComplete) {
+              setShowErrors(true);
+              return;
+            }
+            mutate(newRecipe);
+          }}
+        >
           {`${capitalize(modifyType)} Recipe`}
         </Button>
-      </View> */}
-    </SafeAreaView >
+      </View>
+    </SafeAreaView>
   );
-};
+}
 
 export default ModifyRecipePage;

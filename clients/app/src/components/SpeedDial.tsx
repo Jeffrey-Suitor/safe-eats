@@ -5,7 +5,7 @@ import { defaultRecipe } from "@safe-eats/types/recipeTypes";
 import { View, Text, TouchableOpacity } from "react-native";
 import { styled } from "nativewind";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import IconButton from "./IconButton";
+import { IconButton } from "./Buttons";
 
 export type NavigationProps =
   | NativeStackScreenProps<RootStackParamList, "Appliances">

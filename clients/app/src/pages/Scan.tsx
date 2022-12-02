@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView, View, Text } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import Button from "../components/Button";
+import { Button } from "../components/Buttons";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,

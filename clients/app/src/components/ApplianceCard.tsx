@@ -9,7 +9,7 @@ import CircularProgress from "react-native-circular-progress-indicator";
 import { trpc } from "../utils/trpc";
 import { Recipe } from "@safe-eats/types/recipeTypes";
 import { Appliance } from "@safe-eats/types/applianceTypes";
-import IconButton from "./IconButton";
+import { IconButton } from "../components/Buttons";
 interface ApplianceTemperatureDialProps {
   appliance: Appliance;
 }
