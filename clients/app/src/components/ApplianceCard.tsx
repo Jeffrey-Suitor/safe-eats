@@ -1,5 +1,4 @@
-import { View, Text, ActivityIndicator } from "react-native";
-import { TouchableRipple } from "react-native-paper";
+import { View, Text, ActivityIndicator, Pressable } from "react-native";
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../_app";
@@ -187,7 +186,7 @@ function ApplianceCard({
 
   return (
     <View key={id} className="mb-4 rounded-xl bg-white shadow-lg">
-      <TouchableRipple
+      <Pressable
         onPress={() => {
           setApplianceExpanded((prev) => !prev);
         }}
@@ -275,7 +274,7 @@ function ApplianceCard({
             </View>
           )}
         </View>
-      </TouchableRipple>
+      </Pressable>
     </View>
   );
 }

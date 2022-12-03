@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import useBLE from "../utils/useBLE";
-import { Text, Button } from "react-native-paper";
+import { Button } from "./Buttons";
 
 function BLECard() {
   const {
@@ -31,7 +31,6 @@ function BLECard() {
           >
             <Text className="text-center">{device.name}</Text>
             <Button
-              mode="contained"
               onPress={() => {
                 if (connectedDevice && connectedDevice.id !== device.id) {
                   disconnect();

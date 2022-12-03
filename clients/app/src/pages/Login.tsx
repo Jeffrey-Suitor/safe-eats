@@ -57,7 +57,7 @@ function LoginPage() {
   return (
     <KeyboardAvoidingView className="flex-auto">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex h-full w-full p-4">
+        <View className="flex h-full w-full justify-center p-4">
           <View className="w-full border-b border-gray-200">
             <View className="flex w-full flex-row">
               <Pressable
@@ -75,7 +75,13 @@ function LoginPage() {
             </View>
           </View>
 
-          <View className="w-full grow justify-center">
+          <View
+            className={
+              "h-1/2 w-full justify-center" + loginInfo === "signup"
+                ? "h-3/5"
+                : ""
+            }
+          >
             <TextInput
               autoComplete="email"
               wrapperClasses="my-4"

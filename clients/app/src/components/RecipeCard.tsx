@@ -1,7 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Recipe } from "@safe-eats/types/recipeTypes";
-import { View, Text } from "react-native";
-import { TouchableRipple } from "react-native-paper";
+import { View, Text, Pressable } from "react-native";
 import { RootStackParamList } from "../_app";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -22,7 +21,7 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
 
   return (
     <View key={recipe.id} className="mb-4 rounded-xl bg-white shadow-lg">
-      <TouchableRipple
+      <Pressable
         onPress={() => {
           setExpanded((prev) => !prev);
         }}
@@ -66,7 +65,7 @@ function RecipeCard({ recipe, navigation }: RecipeCardProps) {
             </View>
           )}
         </View>
-      </TouchableRipple>
+      </Pressable>
     </View>
   );
 }

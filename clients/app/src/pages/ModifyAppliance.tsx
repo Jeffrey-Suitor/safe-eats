@@ -1,24 +1,19 @@
-import {
-  ActivityIndicator,
-  TextInput,
-  HelperText,
-  Button,
-} from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../_app";
 import { trpc } from "../utils/trpc";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View } from "react-native";
+import { SafeAreaView, View, ActivityIndicator } from "react-native";
 import { styled } from "nativewind";
 import useBLE from "../utils/useBLE";
 import { applianceTypes } from "@safe-eats/types/applianceConstants";
-import DropDown from "react-native-paper-dropdown";
 import { capitalize } from "@safe-eats/helpers/stringHelpers";
 import Base64 from "base-64";
 import {
   ApplianceInfo,
   ApplianceInfoSchema,
 } from "@safe-eats/types/applianceTypes";
+import { TextInput, DropDown } from "../components/Inputs";
+import { Button } from "../components/Buttons";
 
 export type NavigationProps = NativeStackScreenProps<
   RootStackParamList,
@@ -101,89 +96,53 @@ function ModifyAppliancePage({ navigation, route }: NavigationProps) {
     <SafeAreaView>
       <View className="h-full w-full p-4">
         <View className="flex grow items-stretch justify-center gap-4">
-          <View>
-            <StyledTextInput
-              label="Appliance Name"
-              placeholder={appliance.name}
-              onChangeText={(text) => {
-                setApplianceInfo((prev) => {
-                  return { ...prev, name: text };
-                });
-              }}
-            />
-            <HelperText
-              type="error"
-              visible={showErrors && applianceInfo.name === ""}
-            >
-              Please enter an appliance name
-            </HelperText>
-          </View>
+          <TextInput
+            label="Appliance Name"
+            value={applianceInfo.name}
+            onChangeText={(name) =>
+              setApplianceInfo({ ...applianceInfo, name })
+            }
+            errorText="Please enter an appliance name"
+            showError={showErrors && applianceInfo.name === ""}
+          />
 
-          <View>
-            <StyledDropDown
-              label="Appliance"
-              mode={"flat"}
-              visible={showDropDown}
-              showDropDown={() => setShowDropDown(true)}
-              onDismiss={() => setShowDropDown(false)}
-              value={applianceInfo.type}
-              setValue={(value) =>
-                setApplianceInfo((prev) => {
-                  return { ...prev, type: value };
-                })
-              }
-              list={applianceTypes.map((val) => {
-                return { label: val.replace("_", " "), value: val };
-              })}
-            />
-            <HelperText
-              type="error"
-              visible={showErrors && applianceInfo.type !== "Toaster_Oven"}
-            >
-              Please select an appliance type
-            </HelperText>
-          </View>
+          <DropDown
+            label="Appliance Type"
+            selectedOption={applianceInfo.type}
+            options={applianceTypes as unknown as string[]}
+            showDropDown={showDropDown}
+            setShowDropDown={() => setShowDropDown(!showDropDown)}
+            onChange={(text) => {
+              const type = text as typeof applianceTypes[number];
+              setApplianceInfo({ ...applianceInfo, type });
+            }}
+          />
 
           {isConnected && (
-            <View>
-              <StyledTextInput
-                label="Wifi Name"
-                onChangeText={(text) => {
-                  setApplianceInfo((prev) => {
-                    return { ...prev, ssid: text };
-                  });
-                }}
-              />
-              <HelperText
-                type="error"
-                visible={showErrors && applianceInfo.ssid === ""}
-              >
-                Please enter a wifi password
-              </HelperText>
-            </View>
+            <TextInput
+              label="Wifi name"
+              value={applianceInfo.ssid}
+              onChangeText={(ssid) =>
+                setApplianceInfo({ ...applianceInfo, ssid })
+              }
+              errorText="Please enter an wifi name"
+              showError={showErrors && applianceInfo.ssid === ""}
+            />
           )}
 
           {isConnected && (
-            <View>
-              <StyledTextInput
-                label="Wifi Password"
-                onChangeText={(text) => {
-                  setApplianceInfo((prev) => {
-                    return { ...prev, pass: text };
-                  });
-                }}
-              />
-              <HelperText
-                type="error"
-                visible={showErrors && applianceInfo.pass === ""}
-              >
-                Please enter an appliance name
-              </HelperText>
-            </View>
+            <TextInput
+              label="Wifi password"
+              value={applianceInfo.pass}
+              onChangeText={(pass) =>
+                setApplianceInfo({ ...applianceInfo, pass })
+              }
+              errorText="Please enter an wifi password"
+              showError={showErrors && applianceInfo.pass === ""}
+            />
           )}
         </View>
         <Button
-          mode="contained"
           className={!formComplete ? "bg-gray-500" : ""}
           onPress={() => {
             if (!formComplete) {
