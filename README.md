@@ -1,73 +1,38 @@
-# Turborepo starter
+# Safe Eats
+## Overview
 
-This is an official npm starter turborepo.
+Safe Eats is the name of my engineering capstone project. This project was designed to allow a caregiver to create meals to be reheated and identify them with a QR code. Then leave the food with the patient who when they are ready removes the food from storage and scans the QR code using our customized toaster oven. This toaster oven then reads the cooking information and automatically sets the appropriate cooking time and temperature and will also remotely notify the caregiver via our mobile app that a meal has started, finished, along with other warnings such as expired food or fire warnings.
 
-## What's inside?
+## Package Overview
 
-This turborepo uses [npm](https://www.npmjs.com/) as a package manager. It includes the following packages/apps:
+This package is built using the following tools:
 
-### Apps and Packages
+Embedded System:
+- ESP32 microcontroller
+- Solid state relays for controlling the toaster oven
+- Barcode scanner to scan the QR code
+- K-type thermocoouple for measuring the temperature
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+Mobile Application:
+- React Native for cross platform deployments
+- Expo for deployment capabilities and built in functionality
+- NativeWind for styling using TailwindCSS
+- TRPC for typesafe calls to the backend
+- Designed in Figma
+- Sentry for logging and crash tracing
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
+Backend: 
+- Prisma as a database ORM for typesafety
+- TRPC for typesafety with the frontend
+- Zod for typesafe validation of data
+- Planetscale for automatic database scaling
+- Railway for infrastructure
+- Axiom for backend logging and issue monitoring
 
-This turborepo has some additional tools already setup for you:
+## Next Steps
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-npm run build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-npm run dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Pipelines](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+The app is mostly finished and is in a mostly usable state but I want to:
+- Finish the new styling
+- Maybe redo the forms to use React Hook Form
+- Finish the new authentication page and allow sharing of device information so multiple people can easily view the same device status
